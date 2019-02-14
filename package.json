@@ -1,0 +1,41 @@
+{
+  "name": "ti-cities",
+  "version": "1.0.0",
+  "description": "for TI vis",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NadiaRom/TI-cities.git"
+  },
+  "keywords": [
+    "d3",
+    "TI"
+  ],
+  "author": "Nadiia Romanenko, texty",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/NadiaRom/TI-cities/issues"
+  },
+  "homepage": "https://github.com/NadiaRom/TI-cities#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/polyfill": "^7.2.5",
+    "@babel/plugin-transform-arrow-functions": "^7.2.0",
+    "@babel/plugin-transform-destructuring": "^7.3.2",
+    "@babel/preset-env": "^7.3.1",
+    "autoprefixer": "^9.4.5",
+    "babel-plugin-transform-es2015-template-literals": "^6.22.0",
+    "browserify": "^16.2.3",
+    "postcss-cli": "^6.1.1"
+  },
+  "dependencies": {
+    "chroma-js": "^2.0.2",
+    "d3": "^5.8.0",
+    "jquery": "^3.3.1",
+    "tippy.js": "^3.4.1"
+  }
+}

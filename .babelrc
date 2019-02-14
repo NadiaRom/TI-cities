@@ -1,0 +1,23 @@
+{
+    "presets": [
+        [
+            "@babel/env",
+            {
+                "targets": {
+                    "edge": "16",
+                    "firefox": "52",
+                    "chrome": "57",
+                    "safari": "10.1",
+                    "opera": "44"
+                },
+                "useBuiltIns": "usage",
+            }
+        ]
+    ],
+
+    "plugins": [
+            "@babel/plugin-transform-arrow-functions",
+            "babel-plugin-transform-es2015-template-literals",
+            "@babel/plugin-transform-destructuring",
+        ]
+}
