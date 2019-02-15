@@ -169,11 +169,13 @@ Promise.all([
         .style('stroke', d => rankCols[getRank(d.value / indMax[d.indicator] * 100)]);
 
     const zoomed = function () {
+        const tr = d3.event.transform;
         map
-            .selectAll('path.obl, path.country, g.city path')
-            .attr('transform', d3.event.transform);
+            .selectAll('path.obl, path.country')
+            .attr('transform', tr);
         
-        debugger;
+        map.selectAll('g.city path')
+            .attr('transform', `translate(${tr.x}, ${tr.y})`)
     };
     
 
