@@ -34,10 +34,12 @@
     "postcss-cli": "^6.1.1"
   },
   "dependencies": {
+    "bloodhound-js": "^1.2.3",
     "chroma-js": "^2.0.2",
     "d3": "^5.9.1",
     "jquery": "^3.3.1",
     "tippy.js": "^3.4.1",
-    "topojson": "^3.0.2"
+    "topojson": "^3.0.2",
+    "typeahead.js": "^0.11.1"
   }
 }

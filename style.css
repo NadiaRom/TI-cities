@@ -21,22 +21,41 @@ body * {
   margin: 0;
   padding: 0;
 }
-#cities_map figure {
+#cities_map figure#map {
   margin: 0;
   padding: 0;
 }
-#cities_map figure svg path.obl {
+#cities_map figure#map svg path.obl {
   stroke: #dbdbda;
   fill: none;
 }
-#cities_map figure svg path.country {
+#cities_map figure#map svg path.country {
   stroke: #dbdbda;
   fill: none;
   stroke-width: 3px;
 }
-#cities_map figure svg .g2018 path {
+#cities_map figure#map svg g.city {
+  font-size: 0.75em;
+}
+#cities_map figure#map svg g.city .g2018 path {
   fill: none;
   stroke-opacity: 0.7;
+  stroke-linecap: round;
+}
+#cities_map figure#map svg g.city text {
+  font-family: "Open Sans", sans-serif;
+  fill: #676763;
+  dominant-baseline: text-before-edge;
+  text-anchor: middle;
+  opacity: 0;
+}
+#cities_map figure#map svg g.city text.obl_center {
+  opacity: 1;
+}
+#cities_map figure#ranking {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  grid-template-columns: 1fr;
 }
 #cities_map nav#indicators {
   display: flex;
@@ -60,4 +79,21 @@ body * {
   font-weight: 600;
 }
 
-/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInN0eWxlLnNjc3MiLCJzdHlsZS5jc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBS0E7RUFDRSxvQ0FOUTtFQU9SLHlCQUxNO0VBTU4sY0FQUTtFQVFSLFNBQUE7QUNKRjtBRE1FO0VBQ0Usc0JBQUE7RUFDQSxhQUFBO0FDSko7O0FEUUE7RUFDRSxhQUFBO0VBQ0EsOEJBQUE7RUFDQSxpQ0FBQTtFQUNBLGFBQUE7RUFDQSxtQkFBQTtBQ0xGO0FET0U7RUFDRSxpQkFBQTtFQUNBLFNBQUE7RUFDQSxVQUFBO0FDTEo7QURRRTtFQUNFLFNBQUE7RUFDQSxVQUFBO0FDTko7QURVTTtFQUNFLGVBQUE7RUFDQSxVQUFBO0FDUlI7QURXTTtFQUNFLGVBQUE7RUFDQSxVQUFBO0VBQ0EsaUJBQUE7QUNUUjtBRFlNO0VBQ0UsVUFBQTtFQUNBLG1CQUFBO0FDVlI7QURlRTtFQUNFLGFBQUE7RUFDQSxlQUFBO0FDYko7QURlSTtFQUNFLGdCQUFBO0VBQ0EsYUFBQTtFQUNBLGVBQUE7RUFDQSxjQUFBO0VBQ0EseUJBQUE7RUFDQSx5QkFBQTtFQUNBLGlCQUFBO0VBQ0EsdUJBQUE7RUFDQSx5QkFBQTtFQUNBLG9CQUFBO0FDYk47QURlTTtFQUNFLHlCQXBFRDtFQXFFQyxjQUFBO0VBQ0EsZ0JBQUE7QUNiUiIsImZpbGUiOiJzdHlsZS5jc3MifQ== */
+#search_city input {
+  box-shadow: none;
+  border: none;
+  border-bottom: 1px solid #00adef;
+  line-height: 1.5;
+  font-size: 1em;
+}
+#search_city .tt-menu {
+  background-color: #ffffff;
+  box-shadow: 0 0.25em 0.5em 0 #ededed;
+  padding: 0 0.5em 0.5em 0.5em;
+}
+#search_city .tt-suggestion {
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+
+/*# sourceMappingURL=style.css.map */

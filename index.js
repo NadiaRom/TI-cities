@@ -2,7 +2,9 @@ const $ = require('jquery'),
     d3 = require('d3'),
     tippy = require('tippy.js'),
     chroma = require('chroma-js'),
-    topojson = require('topojson');
+    topojson = require('topojson'),
+    Bloodhound = require('bloodhound-js'),
+    typeahead = require('typeahead.js');
 
 const cols = {
     font: 'rgb(51, 51, 49)',
@@ -90,9 +92,8 @@ const scaleCircle = d3.scalePoint()
         'Професійна етика та конфлікт інтересів',
         'Соціальні послуги',
         'Фінансова та матеріальна допомога, гранти',
-        '!technical!'
     ])
-    .range([0, 360]);
+    .range([-180, 0]);
 
 Promise.all([
     d3.json('data/Ukraine.topojson'),
@@ -123,13 +124,13 @@ Promise.all([
             left: fontSize,
         };
     
-    const map = d3.select('#cities_map figure svg')
+    const map = d3.select('#cities_map figure#map svg')
         .attr('height', mapH)
         .attr('width', mapW);
 
     const scaleR = d3.scaleLinear()
         .domain([0, 100])
-        .range([1, mapW * 0.035]);
+        .range([1, mapW * 0.03]);
     
     const projection = d3.geoMercator()
         .fitSize(
@@ -163,6 +164,15 @@ Promise.all([
         .append('g')
         .classed('city', true);
 
+    const cityLabs = cityGs.append('text')
+        .datum(d => d.values[1].values.filter(v => v.indicator === 'Загальний бал')[0])
+        .classed('city_lab', true)
+        .classed('obl_center', d => d.district)
+        .text(d => d.city)
+        .attr('x', d => projection([d.lon, d.lat])[0])
+        .attr('y', d => projection([d.lon, d.lat])[1])
+        .attr('dy', '-0.1em');
+
     const cityGs2018 = cityGs.append('g')
         .datum(d => d.values
             .filter(v => v.key === '2018')[0].values
@@ -191,10 +201,13 @@ Promise.all([
     const zoomed = function () {
         const tr = d3.event.transform;
         map
-            .selectAll('path.obl, path.country, g.city path')
+            .selectAll('path.obl, path.country, g.city')
             .attr('transform', tr);
-        
-        map.selectAll('g.city path')
+
+        cityLabs
+            .style('font-size', `${1 / Math.sqrt(tr.k)}em`);
+
+        cityFlower
             .attr('d', function (d) {
                 const [cx, cy] = this.getAttribute('d')
                     .split('L')[0]
@@ -210,6 +223,8 @@ Promise.all([
                 return `M${cx} ${cy} L${rx} ${ry}`;
             })
             .style('stroke-width', `${FlStrokeW / Math.sqrt(tr.k)}px`);
+
+        console.log(tr.k)
     };
     
 
@@ -219,5 +234,55 @@ Promise.all([
         .on('zoom', zoomed);
     
     map.call(zoom);
+
+    const slopeW = $('figure#ranking div.chart_cont').width(),
+        slopeH = $('figure#ranking div.chart_cont').height();
+
+    // draw slopes ----------------------------------------------------------------------------------------------------
+
+    const slopes = d3.select('figure#ranking svg')
+        .attr('width', slopeW)
+        .attr('height', slopeH);
+
+    // search cities --------------------------------------------------------------------------------------------------
+    const bhCities = new Bloodhound({
+        local: nested.map(d => d.key),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+    });
+    bhCities.initialize().then(function () {
+
+        // const searchBH = function (q, cb) {
+        //     const matches = bhCities.search(q, function (d) {
+        //         debugger;
+        //     });
+        // };
+        // bhCities.search(
+        //     'd',
+        //     function(d) {
+        //         console.log(d);
+        //     },
+        //     function(d) {
+        //         console.log(d);
+        //     }
+        // );
+
+                $('#search_city .typeahead').typeahead({
+                hint: true,
+                highlight: true,
+                minLength: 1,
+            },
+            {
+                name: 'cities',
+                source: bhCities,
+            });
+    });
+
+    // var states = new Bloodhound({
+    //     datumTokenizer: Bloodhound.tokenizers.whitespace,
+    //     queryTokenizer: Bloodhound.tokenizers.whitespace,
+    //     // `states` is an array of state names defined in "The Basics"
+    //     local: states
+    // })
     
 });

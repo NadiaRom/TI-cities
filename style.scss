@@ -28,7 +28,7 @@ body {
     padding: 0;
   }
 
-  figure {
+  figure#map {
     margin: 0;
     padding: 0;
 
@@ -45,11 +45,34 @@ body {
         stroke-width: 3px;
       }
 
-      .g2018 path {
-        fill: none;
-        stroke-opacity: 0.7;
+      g.city {
+        font-size: 0.75em;
+
+        .g2018 path {
+          fill: none;
+          stroke-opacity: 0.7;
+          stroke-linecap: round;
+        }
+
+        text {
+          font-family: $fontfam;
+          fill: lighten($fontcol, 20%);
+          dominant-baseline: text-before-edge;
+          text-anchor: middle;
+          opacity: 0;
+
+          &.obl_center {
+            opacity: 1;
+          }
+        }
       }
     }
+  }
+
+  figure#ranking {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    grid-template-columns: 1fr;
   }
 
   nav#indicators {
@@ -74,5 +97,27 @@ body {
         font-weight: 600;
       }
     }
+  }
+}
+
+#search_city {
+
+  input {
+    box-shadow: none;
+    border: none;
+    border-bottom: 1px solid $blue;
+    line-height: 1.5;
+    font-size: 1em;
+  }
+
+  .tt-menu {
+    background-color: $bgcol;
+    box-shadow: 0 0.25em 0.5em 0 darken($bgcol, 7%);
+    padding: 0 0.5em 0.5em 0.5em;
+  }
+
+  .tt-suggestion {
+    font-size: 0.85em;
+    line-height: 1.5;
   }
 }

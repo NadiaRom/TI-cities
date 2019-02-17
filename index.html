@@ -17,8 +17,17 @@
         <header>
             <h1>Рейтинг прозорості 100 міст</h1>
         </header>
-        <figure><svg></svg></figure>
-        <article></article>
+        <figure id="map"><svg></svg></figure>
+        <figure id="ranking">
+            <div id="rank_header">
+                <div id="search_city">
+                    <input class="typeahead" type="text" placeholder="Знайти місто">
+                </div>
+                <h4>Рейтинг міст</h4>
+                <p>Графік інтерактивний: наводьте мишею та клікайте</p>
+            </div>
+            <div class="chart_cont"><svg></svg></div>
+        </figure>
         <nav id="indicators"></nav>
     </section>
     <section id="cities_change"></section>
