@@ -9,16 +9,33 @@ const cols = {
     bg: '#ffffff',
 };
 
+// const rankCols = {
+//     b: 'rgb(30, 149, 239)',
+//     c: 'rgb(8, 168, 186)',
+//     d: 'rgb(3, 165, 86)',
+//     e: 'rgb(100, 187, 65)',
+//     f: 'rgb(197, 212, 50)',
+//     g: 'rgb(253, 220, 34)',
+//     h: 'rgb(251, 153, 41)',
+//     i: 'rgb(242, 85, 53)',
+//     j: 'rgb(245, 61, 61)',
+// };
+
+// const rankCols = chroma.scale(['#DB2B30','#552B9E'])
+//     .mode('lch')
+//     .domain([80, 70, 65, 60, 55, 50, 40, 20, 0])
+//     .colors(9);
+
 const rankCols = {
-    b: 'rgb(30, 149, 239)',
-    c: 'rgb(8, 168, 186)',
-    d: 'rgb(3, 165, 86)',
-    e: 'rgb(100, 187, 65)',
-    f: 'rgb(197, 212, 50)',
-    g: 'rgb(253, 220, 34)',
-    h: 'rgb(251, 153, 41)',
-    i: 'rgb(242, 85, 53)',
-    j: 'rgb(245, 61, 61)',
+    b: '#03ff7c',
+    c: '#00f832',
+    d: '#28ff0a',
+    e: '#81ff1b',
+    f: '#cfff2c',
+    g: '#ffec3c',
+    h: '#ffb34d',
+    i: '#ff865e',
+    j: '#ff6f7a',
 };
 
 const getRank = function (p) {
@@ -152,6 +169,8 @@ Promise.all([
             .filter(v => v.indicator !== 'Загальний бал')
         )
         .classed('g2018', true);
+
+    const FlStrokeW = 1.5;
     
     const cityFlower = cityGs2018.selectAll('path')
         .data(d => d)
@@ -166,16 +185,31 @@ Promise.all([
             );
             return `M${cx} ${cy} L${rx} ${ry}`;
         })
-        .style('stroke', d => rankCols[getRank(d.value / indMax[d.indicator] * 100)]);
+        .style('stroke', d => rankCols[getRank(d.value / indMax[d.indicator] * 100)])
+        .style('stroke-width', `${FlStrokeW}px`);
 
     const zoomed = function () {
         const tr = d3.event.transform;
         map
-            .selectAll('path.obl, path.country')
+            .selectAll('path.obl, path.country, g.city path')
             .attr('transform', tr);
         
         map.selectAll('g.city path')
-            .attr('transform', `translate(${tr.x}, ${tr.y})`)
+            .attr('d', function (d) {
+                const [cx, cy] = this.getAttribute('d')
+                    .split('L')[0]
+                    .match(/(\d+\.?\d*)/g)
+                    .map(parseFloat);
+
+                const [rx, ry] = getPointOnCircle(
+                    scaleCircle(d.indicator),
+                    scaleR(d.value / indMax[d.indicator] * 100) / Math.sqrt(tr.k),
+                    cx, cy
+                );
+
+                return `M${cx} ${cy} L${rx} ${ry}`;
+            })
+            .style('stroke-width', `${FlStrokeW / Math.sqrt(tr.k)}px`);
     };
     
 
