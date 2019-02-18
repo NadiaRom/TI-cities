@@ -81,7 +81,7 @@ body {
       g.sl_city {
 
         text {
-          font-size: 0.85em;
+          font-size: 0.75em;
           font-family: $fontfam;
           fill: $fontcol;
           opacity: 0;
@@ -98,7 +98,7 @@ body {
 
         path {
           fill: none;
-          stroke: rgba(lighten($fontcol, 25%), 0.33);
+          stroke: rgba(lighten($fontcol, 50%), 0.5);
         }
 
         &.visible_default {

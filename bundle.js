@@ -1,42 +1,18 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-"use strict";
-
-require("core-js/modules/es7.symbol.async-iterator");
-
-require("core-js/modules/es6.symbol");
-
-require("core-js/modules/es6.regexp.split");
-
-require("core-js/modules/es6.regexp.match");
-
-require("core-js/modules/es6.array.sort");
-
-require("core-js/modules/web.dom.iterable");
-
-require("core-js/modules/es6.regexp.search");
-
-require("core-js/modules/es6.regexp.replace");
-
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
-
-function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
 const $ = require('jquery'),
-      d3 = require('d3'),
-      tippy = require('tippy.js'),
-      chroma = require('chroma-js'),
-      topojson = require('topojson'),
-      Bloodhound = require('bloodhound-js'),
-      typeahead = require('typeahead.js');
+    d3 = require('d3'),
+    tippy = require('tippy.js'),
+    chroma = require('chroma-js'),
+    topojson = require('topojson'),
+    Bloodhound = require('bloodhound-js'),
+    typeahead = require('typeahead.js');
 
 const cols = {
-  font: 'rgb(51, 51, 49)',
-  bg: '#ffffff'
-}; // const rankCols = {
+    font: 'rgb(51, 51, 49)',
+    bg: '#ffffff',
+};
+
+// const rankCols = {
 //     b: 'rgb(30, 149, 239)',
 //     c: 'rgb(8, 168, 186)',
 //     d: 'rgb(3, 165, 86)',
@@ -47,269 +23,333 @@ const cols = {
 //     i: 'rgb(242, 85, 53)',
 //     j: 'rgb(245, 61, 61)',
 // };
+
 // const rankCols = chroma.scale(['#DB2B30','#552B9E'])
 //     .mode('lch')
 //     .domain([80, 70, 65, 60, 55, 50, 40, 20, 0])
 //     .colors(9);
 
 const rankCols = {
-  b: '#03ff7c',
-  c: '#00f832',
-  d: '#28ff0a',
-  e: '#81ff1b',
-  f: '#cfff2c',
-  g: '#ffec3c',
-  h: '#ffb34d',
-  i: '#ff865e',
-  j: '#ff6f7a'
+    b: '#03ff7c',
+    c: '#00f832',
+    d: '#28ff0a',
+    e: '#81ff1b',
+    f: '#cfff2c',
+    g: '#ffec3c',
+    h: '#ffb34d',
+    i: '#ff865e',
+    j: '#ff6f7a',
 };
 
-const getRank = function getRank(p) {
-  if (p >= 90) return 'a';
-  if (p >= 80) return 'b';
-  if (p >= 70) return 'c';
-  if (p >= 65) return 'd';
-  if (p >= 60) return 'e';
-  if (p >= 55) return 'f';
-  if (p >= 50) return 'g';
-  if (p >= 40) return 'h';
-  if (p >= 20) return 'i';
-  if (p >= 0) return 'j';
+const getRank = function (p) {
+    if (p >= 90) return 'a';
+    if (p >= 80) return 'b';
+    if (p >= 70) return 'c';
+    if (p >= 65) return 'd';
+    if (p >= 60) return 'e';
+    if (p >= 55) return 'f';
+    if (p >= 50) return 'g';
+    if (p >= 40) return 'h';
+    if (p >= 20) return 'i';
+    if (p >= 0) return 'j';
 };
 
-const nform = function nform(d) {
-  return d3.format(',.6r')(d).replace(/\..*/, '');
-};
-
+const nform = d => d3.format(',.6r')(d).replace(/\..*/, '');
 const mobW = 577;
+
 const fontSize = parseInt($('body').css('font-size'));
 
-const numericalize = function numericalize(d) {
-  for (const k in d) {
-    if (d[k].search(/[^0-9\.]/) === -1) {
-      d[k] = +d[k];
-    } else if (['True', 'False'].indexOf(d[k]) >= 0) {
-      d[k] = d[k] === 'True';
+const numericalize = function (d) {
+    for (const k in d) {
+        if (d[k].search(/[^0-9\.]/) === -1) {
+            d[k] = +d[k];
+        } else if (['True', 'False'].indexOf(d[k]) >= 0) {
+            d[k] = d[k] === 'True';
+        }
     }
-  }
-
-  return d;
-};
-
-const getPointOnCircle = function getPointOnCircle(deg, r, cx, cy) {
-  const radians = deg * Math.PI / 180;
-  return [r * Math.cos(radians) + cx, r * Math.sin(radians) + cy];
-};
-
-const scaleCircle = d3.scalePoint().domain(['Інформація про роботу ОМС', 'Бюджетний процес', 'Доступ та участь', 'Житлова політика', 'Закупівлі', 'Землекористування та будівельна політика', 'Кадрові питання', 'Комунальне майно', 'Комунальні підприємства', 'Освіта', 'Професійна етика та конфлікт інтересів', 'Соціальні послуги', 'Фінансова та матеріальна допомога, гранти']).range([-180, 0]);
-Promise.all([d3.json('data/Ukraine.topojson'), d3.csv('data/data_long.csv', numericalize), d3.json('data/indicators_max.json', numericalize)]).then(function (_ref) {
-  let _ref2 = _slicedToArray(_ref, 3),
-      tjson = _ref2[0],
-      data = _ref2[1],
-      indMax = _ref2[2];
-
-  let indValues = data.map(function (d) {
-    return d.indicator;
-  });
-  indValues = indValues.filter(function (d, i) {
-    return indValues.indexOf(d) === i;
-  }).sort(function (d) {
-    return d === 'Загальний бал' ? -1 : 1;
-  });
-  const inds = d3.select('#cities_map #indicators').selectAll('button.ind').data(indValues).enter().append('button').classed('ind', true).classed('active', function (d) {
-    return d === 'Загальний бал';
-  }).text(function (d) {
     return d;
-  });
-  const $fig = $('#cities_map figure'),
+};
+
+const getPointOnCircle = function (deg, r, cx, cy) {
+    const radians = deg * Math.PI / 180
+    return [
+        r * Math.cos(radians) + cx,
+        r * Math.sin(radians) + cy,
+    ];
+};
+
+const scaleCircle = d3.scalePoint()
+    .domain([
+        'Інформація про роботу ОМС',
+        'Бюджетний процес',
+        'Доступ та участь',
+        'Житлова політика',
+        'Закупівлі',
+        'Землекористування та будівельна політика',
+        'Кадрові питання',
+        'Комунальне майно',
+        'Комунальні підприємства',
+        'Освіта',
+        'Професійна етика та конфлікт інтересів',
+        'Соціальні послуги',
+        'Фінансова та матеріальна допомога, гранти',
+    ])
+    .range([-180, 0]);
+
+Promise.all([
+    d3.json('data/Ukraine.topojson'),
+    d3.csv('data/data_long.csv', numericalize),
+    d3.json('data/indicators_max.json', numericalize),
+]).then(function ([tjson, data, indMax]) {
+    let indValues = data.map(d => d.indicator);
+    indValues = indValues.filter((d, i) => indValues.indexOf(d) === i)
+        .sort(d => (d === 'Загальний бал') ? -1 : 1);
+    
+    const inds = d3.select('#cities_map #indicators')
+        .selectAll('button.ind')
+        .data(indValues)
+        .enter()
+        .append('button')
+        .classed('ind', true)
+        .classed('active', d => d === 'Загальний бал')
+        .text(d => d);
+
+
+    const $fig = $('#cities_map figure'),
         mapW = $fig.width(),
         mapH = $fig.height(),
         mapM = {
-    top: fontSize,
-    right: fontSize,
-    bottom: fontSize,
-    left: fontSize
-  };
-  const map = d3.select('#cities_map figure#map svg').attr('height', mapH).attr('width', mapW);
-  const scaleR = d3.scaleLinear().domain([0, 100]).range([1, mapW * 0.03]);
-  const projection = d3.geoMercator().fitSize([mapW - mapM.left - mapM.right, mapH - mapM.top - mapM.bottom], topojson.feature(tjson, tjson.objects.regions));
-  const geopath = d3.geoPath(projection);
-  const obls = map.selectAll('path.obl').data(topojson.feature(tjson, tjson.objects.regions).features).enter().append('path').classed('obl', true).attr('d', geopath);
-  const ukrTjson = topojson.feature(tjson, tjson.objects.countries);
-  ukrTjson.features = ukrTjson.features.filter(function (d) {
-    return d.id === 'UKR';
-  });
-  const Ukr = map.append('path').classed('country', true).attr('d', geopath(ukrTjson));
-  const nested = d3.nest().key(function (d) {
-    return d.city;
-  }).key(function (d) {
-    return d.year;
-  }).entries(data); // .map(function (dat) {
-  //     return dat.values.map(function (d) {
-  //         d.values = d.values.reduce(function (res, a) {
-  //             res[a.indicator] = a.value;
-  //             return res;
-  //         }, {});
-  //         return d;
-  //     });
-  // });
+            top: fontSize, 
+            right: fontSize,
+            bottom: fontSize,
+            left: fontSize,
+        };
+    
+    const map = d3.select('#cities_map figure#map svg')
+        .attr('height', mapH)
+        .attr('width', mapW);
 
-  const currentInd = 'Загальний бал';
-  const cityGs = map.selectAll('g.city').data(nested).enter().append('g').classed('city', true);
-  const cityLabs = cityGs.append('text').datum(function (d) {
-    return d.values[1].values.filter(function (v) {
-      return v.indicator === 'Загальний бал';
-    })[0];
-  }).classed('city_lab', true).classed('obl_center', function (d) {
-    return d.district;
-  }).text(function (d) {
-    return d.city;
-  }).attr('x', function (d) {
-    return projection([d.lon, d.lat])[0];
-  }).attr('y', function (d) {
-    return projection([d.lon, d.lat])[1];
-  }).attr('dy', '-0.1em');
-  const cityGs2018 = cityGs.append('g').datum(function (d) {
-    return d.values.filter(function (v) {
-      return v.key === '2018';
-    })[0].values.filter(function (v) {
-      return v.indicator !== 'Загальний бал';
-    });
-  }).classed('g2018', true);
-  const FlStrokeW = 1.5;
-  const cityFlower = cityGs2018.selectAll('path').data(function (d) {
-    return d;
-  }).enter().append('path').attr('d', function (d) {
-    const _projection = projection([d.lon, d.lat]),
-          _projection2 = _slicedToArray(_projection, 2),
-          cx = _projection2[0],
-          cy = _projection2[1];
+    const scaleR = d3.scaleLinear()
+        .domain([0, 100])
+        .range([1, mapW * 0.03]);
+    
+    const projection = d3.geoMercator()
+        .fitSize(
+            [mapW - mapM.left - mapM.right, mapH - mapM.top - mapM.bottom],
+            topojson.feature(tjson, tjson.objects.regions)
+        );
+    
+    const geopath = d3.geoPath(projection);
+    const obls = map.selectAll('path.obl')
+        .data(topojson.feature(tjson, tjson.objects.regions).features )
+        .enter()
+        .append('path')
+        .classed('obl', true)
+        .attr('d', geopath);
 
-    const _getPointOnCircle = getPointOnCircle(scaleCircle(d.indicator), scaleR(d.value / indMax[d.indicator] * 100), cx, cy),
-          _getPointOnCircle2 = _slicedToArray(_getPointOnCircle, 2),
-          rx = _getPointOnCircle2[0],
-          ry = _getPointOnCircle2[1];
+    const ukrTjson = topojson.feature(tjson, tjson.objects.countries);
+    ukrTjson.features = ukrTjson.features.filter(d => d.id === 'UKR');
 
-    return "M" + cx + " " + cy + " L" + rx + " " + ry;
-  }).style('stroke', function (d) {
-    return rankCols[getRank(d.value / indMax[d.indicator] * 100)];
-  }).style('stroke-width', FlStrokeW + "px");
+    const Ukr = map.append('path')
+        .classed('country', true)
+        .attr('d', geopath(ukrTjson));
+    
+    const nested = d3.nest()
+        .key(d => d.city)
+        .key(d => d.year)
+        .entries(data);
+        // .map(function (dat) {
+        //     return dat.values.map(function (d) {
+        //         d.values = d.values.reduce(function (res, a) {
+        //             res[a.indicator] = a.value;
+        //             return res;
+        //         }, {});
+        //         return d;
+        //     });
+        // });
 
-  const zoomed = function zoomed() {
-    const tr = d3.event.transform;
-    map.selectAll('path.obl, path.country, g.city').attr('transform', tr);
-    cityLabs.style('font-size', 1 / Math.sqrt(tr.k) + "em");
-    cityFlower.attr('d', function (d) {
-      const _this$getAttribute$sp = this.getAttribute('d').split('L')[0].match(/(\d+\.?\d*)/g).map(parseFloat),
-            _this$getAttribute$sp2 = _slicedToArray(_this$getAttribute$sp, 2),
-            cx = _this$getAttribute$sp2[0],
-            cy = _this$getAttribute$sp2[1];
+    const currentInd = 'Загальний бал';
+    
+    const cityGs = map.selectAll('g.city')
+        .data(nested)
+        .enter()
+        .append('g')
+        .classed('city', true);
 
-      const _getPointOnCircle3 = getPointOnCircle(scaleCircle(d.indicator), scaleR(d.value / indMax[d.indicator] * 100) / Math.sqrt(tr.k), cx, cy),
-            _getPointOnCircle4 = _slicedToArray(_getPointOnCircle3, 2),
-            rx = _getPointOnCircle4[0],
-            ry = _getPointOnCircle4[1];
+    const cityLabs = cityGs.append('text')
+        .datum(d => d.values[1].values.filter(v => v.indicator === 'Загальний бал')[0])
+        .classed('city_lab', true)
+        .classed('obl_center', d => d.district)
+        .text(d => d.city)
+        .attr('x', d => projection([d.lon, d.lat])[0])
+        .attr('y', d => projection([d.lon, d.lat])[1])
+        .attr('dy', '-0.1em');
 
-      return "M" + cx + " " + cy + " L" + rx + " " + ry;
-    }).style('stroke-width', FlStrokeW / Math.sqrt(tr.k) + "px");
-    console.log(tr.k);
-  };
+    const cityGs2018 = cityGs.append('g')
+        .datum(d => d.values
+            .filter(v => v.key === '2018')[0].values
+            .filter(v => v.indicator !== 'Загальний бал')
+        )
+        .classed('g2018', true);
 
-  const zoom = d3.zoom().scaleExtent([1, 7]).translateExtent([[-mapW * 0.1, -mapH * 0.1], [mapW * 1.1, mapH * 1.1]]).on('zoom', zoomed);
-  map.call(zoom); // draw slopes ----------------------------------------------------------------------------------------------------
+    const FlStrokeW = 1.5;
+    
+    const cityFlower = cityGs2018.selectAll('path')
+        .data(d => d)
+        .enter()
+        .append('path')
+        .attr('d', function (d) {
+            const [cx, cy] = projection([d.lon, d.lat]);
+            const [rx, ry] = getPointOnCircle(
+                scaleCircle(d.indicator),
+                scaleR(d.value / indMax[d.indicator] * 100),
+                cx, cy
+            );
+            return `M${cx} ${cy} L${rx} ${ry}`;
+        })
+        .style('stroke', d => rankCols[getRank(d.value / indMax[d.indicator] * 100)])
+        .style('stroke-width', `${FlStrokeW}px`);
 
-  const defaultVisibleSlope = ['Дрогобич', 'Маріуполь', 'Вінниця', 'Київ', 'Львів', 'Одеса', 'Харків'];
-  const slopeW = $('figure#ranking div.chart_cont').width(),
+    const zoomed = function () {
+        const tr = d3.event.transform;
+        map
+            .selectAll('path.obl, path.country, g.city')
+            .attr('transform', tr);
+
+        cityLabs
+            .style('font-size', `${1 / Math.sqrt(tr.k)}em`);
+
+        cityFlower
+            .attr('d', function (d) {
+                const [cx, cy] = this.getAttribute('d')
+                    .split('L')[0]
+                    .match(/(\d+\.?\d*)/g)
+                    .map(parseFloat);
+
+                const [rx, ry] = getPointOnCircle(
+                    scaleCircle(d.indicator),
+                    scaleR(d.value / indMax[d.indicator] * 100) / Math.sqrt(tr.k),
+                    cx, cy
+                );
+
+                return `M${cx} ${cy} L${rx} ${ry}`;
+            })
+            .style('stroke-width', `${FlStrokeW / Math.sqrt(tr.k)}px`);
+
+        console.log(tr.k)
+    };
+    
+
+    const zoom = d3.zoom()
+        .scaleExtent([1, 7])
+        .translateExtent([[-mapW*0.1, -mapH*0.1], [mapW*1.1, mapH*1.1]])
+        .on('zoom', zoomed);
+    
+    map.call(zoom);
+
+
+    // draw slopes ----------------------------------------------------------------------------------------------------
+    const defaultVisibleSlope = [
+       'Дрогобич', 'Маріуполь', 'Вінниця', 'Київ', 'Львів', 'Одеса', 'Харків',
+    ];
+
+    const slopeW = $('figure#ranking div.chart_cont').width(),
         slopeH = $('figure#ranking div.chart_cont').height(),
         slopeM = {
-    top: fontSize * 2,
-    right: fontSize * 0.5,
-    bottom: fontSize,
-    left: fontSize * 0.5
-  };
-  const slopes = d3.select('figure#ranking svg').attr('width', slopeW).attr('height', slopeH);
-  const scaleValue = d3.scaleLinear().domain([0, 100]).range([slopeH - slopeM.bottom, slopeM.top]);
-  const slopeYearLines = slopes.selectAll('path.x_axis').data(['2017', '2018']).enter().append('path').classed('x_axis', true);
+            top: fontSize*2,
+            right:fontSize*0.5,
+            bottom: fontSize,
+            left: fontSize*0.5,
+        };
 
-  const getCurrentIndValue = function getCurrentIndValue(v) {
-    return v.filter(function (d) {
-      return d.indicator === currentInd;
-    })[0].value;
-  };
+    const slopes = d3.select('figure#ranking svg')
+        .attr('width', slopeW)
+        .attr('height', slopeH);
 
-  const slopeCityG = slopes.selectAll('g.sl_city').data(nested).enter().append('g').classed('sl_city', true).classed('visible_default', function (d) {
-    return defaultVisibleSlope.indexOf(d.key) >= 0;
-  });
-  const slopeCityLabs = slopeCityG.append('text').datum(function (d) {
-    return d.values[1].values;
-  }).text(function (d) {
-    return d[0].city;
-  }).attr('y', function (d) {
-    return scaleValue(getCurrentIndValue(d) / indMax[currentInd] * 100);
-  });
-  const slopeMaxX = slopeW - d3.max(slopeCityLabs.nodes(), function (e) {
-    return e.getComputedTextLength();
-  }) - slopeM.right;
-  const slopeR = fontSize * 0.25;
-  slopeCityLabs.attr('x', slopeMaxX);
-  const scaleYear = d3.scalePoint().domain(['2017', '2018']).range([slopeM.left, slopeMaxX - fontSize * 0.33]);
-  slopeYearLines.attr('d', function (d) {
-    return "M" + scaleYear(d) + " " + scaleValue.range()[0] + " V" + scaleValue.range()[1];
-  });
-  const slopeCircles = slopeCityG.selectAll('circle').data(function (d) {
-    return d.values;
-  }).enter().append('circle').attr('cx', function (d) {
-    return scaleYear(d.key);
-  }).attr('cy', function (d) {
-    return scaleValue(getCurrentIndValue(d.values) / indMax[currentInd] * 100);
-  }).attr('r', slopeR).style('fill', function () {
-    return rankCols[getRank(scaleValue.invert(+this.getAttribute('cy')))];
-  }).style('stroke', function () {
-    return this.style.fill;
-  });
-  const slopePath = slopeCityG.append('path').attr('d', function () {
-    const circles = [...this.parentNode.querySelectorAll('circle')];
-    const bboxes = circles.map(function (e) {
-      return e.getBBox();
+    const scaleValue = d3.scaleLinear()
+        .domain([0, 100])
+        .range([slopeH - slopeM.bottom, slopeM.top]);
+
+    const slopeYearLines = slopes.selectAll('path.x_axis')
+        .data(['2017', '2018'])
+        .enter()
+        .append('path')
+        .classed('x_axis', true);
+
+    const getCurrentIndValue = v => v.filter(d => d.indicator === currentInd)[0].value;
+
+    const slopeCityG = slopes.selectAll('g.sl_city')
+        .data(nested)
+        .enter()
+        .append('g')
+        .classed('sl_city', true)
+        .classed('visible_default', d => defaultVisibleSlope.indexOf(d.key) >= 0);
+
+    const slopeCityLabs = slopeCityG
+        .append('text')
+        .datum(d => d.values[1].values)
+        .text(d => d[0].city)
+        .attr('y', d => scaleValue(getCurrentIndValue(d) / indMax[currentInd] * 100));
+
+    const slopeMaxX = slopeW - d3.max(slopeCityLabs.nodes(), e => e.getComputedTextLength()) - slopeM.right;
+    const slopeR = fontSize * 0.25;
+    slopeCityLabs.attr('x', slopeMaxX);
+
+    const scaleYear = d3.scalePoint()
+        .domain(['2017', '2018'])
+        .range([slopeM.left, slopeMaxX - fontSize*0.33]);
+
+
+    slopeYearLines.attr('d', d => `M${scaleYear(d)} ${scaleValue.range()[0]} V${scaleValue.range()[1]}`);
+
+    const slopeCircles = slopeCityG.selectAll('circle')
+        .data(d => d.values)
+        .enter()
+        .append('circle')
+        .attr('cx', d => scaleYear(d.key))
+        .attr('cy', d => scaleValue(getCurrentIndValue(d.values) / indMax[currentInd] * 100))
+        .attr('r', slopeR)
+        .style('fill', function () {
+            return rankCols[getRank(scaleValue.invert(+this.getAttribute('cy')))];
+        })
+        .style('stroke', function () { return this.style.fill});
+
+    const slopePath = slopeCityG.append('path')
+        .attr('d', function () {
+            const circles = [...this.parentNode.querySelectorAll('circle')];
+            const bboxes = circles.map(e => e.getBBox());
+            const [[x0, y0], [x1, y1]] = bboxes.map(b => [b.x + slopeR, b.y + slopeR]);
+            const dx = x1 - x0,
+                dy = y1 - y0,
+                diag = Math.sqrt(dx**2 + dy**2);
+            return `M${x0} ${y0}
+                    q${dx*0.3} ${dy*0.2} ${dx*0.5} ${dy*0.5}
+                    q${dx*0.2} ${dy*0.3} ${dx*0.5} ${dy*0.5}
+                    `
+        });
+    
+
+    // search cities --------------------------------------------------------------------------------------------------
+    const bhCities = new Bloodhound({
+        local: nested.map(d => d.key),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
     });
-
-    const _bboxes$map = bboxes.map(function (b) {
-      return [b.x + slopeR, b.y + slopeR];
-    }),
-          _bboxes$map2 = _slicedToArray(_bboxes$map, 2),
-          _bboxes$map2$ = _slicedToArray(_bboxes$map2[0], 2),
-          x0 = _bboxes$map2$[0],
-          y0 = _bboxes$map2$[1],
-          _bboxes$map2$2 = _slicedToArray(_bboxes$map2[1], 2),
-          x1 = _bboxes$map2$2[0],
-          y1 = _bboxes$map2$2[1];
-
-    const dx = x1 - x0,
-          dy = y1 - y0,
-          diag = Math.sqrt(dx ** 2 + dy ** 2);
-    return "M" + x0 + " " + y0 + "\n                    q" + dx * 0.5 + " " + dy * 0.5 + " " + dx + " " + dy + "\n                    ";
-  }); // search cities --------------------------------------------------------------------------------------------------
-
-  const bhCities = new Bloodhound({
-    local: nested.map(function (d) {
-      return d.key;
-    }),
-    queryTokenizer: Bloodhound.tokenizers.whitespace,
-    datumTokenizer: Bloodhound.tokenizers.whitespace
-  });
-  bhCities.initialize().then(function () {
-    $('#search_city .typeahead').typeahead({
-      hint: true,
-      highlight: true,
-      minLength: 1
-    }, {
-      name: 'cities',
-      source: bhCities
+    bhCities.initialize().then(function () {
+        $('#search_city .typeahead').typeahead(
+            {
+                hint: true,
+                highlight: true,
+                minLength: 1,
+            },
+            {
+                name: 'cities',
+                source: bhCities,
+            });
     });
-  });
+    
 });
-
-},{"bloodhound-js":2,"chroma-js":15,"core-js/modules/es6.array.sort":84,"core-js/modules/es6.regexp.match":86,"core-js/modules/es6.regexp.replace":87,"core-js/modules/es6.regexp.search":88,"core-js/modules/es6.regexp.split":89,"core-js/modules/es6.symbol":90,"core-js/modules/es7.symbol.async-iterator":91,"core-js/modules/web.dom.iterable":92,"d3":124,"jquery":126,"tippy.js":140,"topojson":141,"typeahead.js":145}],2:[function(require,module,exports){
+},{"bloodhound-js":2,"chroma-js":15,"d3":48,"jquery":50,"tippy.js":64,"topojson":65,"typeahead.js":69}],2:[function(require,module,exports){
 module.exports = require('./lib/bloodhound');
 
 },{"./lib/bloodhound":4}],3:[function(require,module,exports){
@@ -325,7 +365,7 @@ module.exports = function(o) {
   });
 };
 
-},{"es6-promise":125,"superagent":134}],4:[function(require,module,exports){
+},{"es6-promise":49,"superagent":58}],4:[function(require,module,exports){
 var _ = require('./utils');
 var Promise = require('es6-promise').Promise;
 var Remote = require('./remote');
@@ -505,7 +545,7 @@ _.mixin(Bloodhound.prototype, {
 
 module.exports = Bloodhound;
 
-},{"./options_parser":6,"./prefetch":8,"./remote":9,"./search_index":10,"./tokenizers":11,"./transport":12,"./utils":13,"es6-promise":125}],5:[function(require,module,exports){
+},{"./options_parser":6,"./prefetch":8,"./remote":9,"./search_index":10,"./tokenizers":11,"./transport":12,"./utils":13,"es6-promise":49}],5:[function(require,module,exports){
 /*
  * typeahead.js
  * https://github.com/twitter/typeahead.js
@@ -944,7 +984,7 @@ function gatherMatchingKeys(keyMatcher) {
 
 module.exports = PersistentStorage;
 
-},{"./utils":13,"storage2":129}],8:[function(require,module,exports){
+},{"./utils":13,"storage2":53}],8:[function(require,module,exports){
 var PersistentStorage = require('./persistent_storage');
 var _ = require('./utils');
 
@@ -1623,7 +1663,7 @@ var _ = {
 
 module.exports = _;
 
-},{"object-assign":127}],14:[function(require,module,exports){
+},{"object-assign":51}],14:[function(require,module,exports){
 /*
  * typeahead.js
  * https://github.com/twitter/typeahead.js
@@ -4992,1718 +5032,6 @@ Emitter.prototype.hasListeners = function(event){
 };
 
 },{}],17:[function(require,module,exports){
-module.exports = function (it) {
-  if (typeof it != 'function') throw TypeError(it + ' is not a function!');
-  return it;
-};
-
-},{}],18:[function(require,module,exports){
-// 22.1.3.31 Array.prototype[@@unscopables]
-var UNSCOPABLES = require('./_wks')('unscopables');
-var ArrayProto = Array.prototype;
-if (ArrayProto[UNSCOPABLES] == undefined) require('./_hide')(ArrayProto, UNSCOPABLES, {});
-module.exports = function (key) {
-  ArrayProto[UNSCOPABLES][key] = true;
-};
-
-},{"./_hide":38,"./_wks":82}],19:[function(require,module,exports){
-'use strict';
-var at = require('./_string-at')(true);
-
- // `AdvanceStringIndex` abstract operation
-// https://tc39.github.io/ecma262/#sec-advancestringindex
-module.exports = function (S, index, unicode) {
-  return index + (unicode ? at(S, index).length : 1);
-};
-
-},{"./_string-at":72}],20:[function(require,module,exports){
-var isObject = require('./_is-object');
-module.exports = function (it) {
-  if (!isObject(it)) throw TypeError(it + ' is not an object!');
-  return it;
-};
-
-},{"./_is-object":43}],21:[function(require,module,exports){
-// false -> Array#indexOf
-// true  -> Array#includes
-var toIObject = require('./_to-iobject');
-var toLength = require('./_to-length');
-var toAbsoluteIndex = require('./_to-absolute-index');
-module.exports = function (IS_INCLUDES) {
-  return function ($this, el, fromIndex) {
-    var O = toIObject($this);
-    var length = toLength(O.length);
-    var index = toAbsoluteIndex(fromIndex, length);
-    var value;
-    // Array#includes uses SameValueZero equality algorithm
-    // eslint-disable-next-line no-self-compare
-    if (IS_INCLUDES && el != el) while (length > index) {
-      value = O[index++];
-      // eslint-disable-next-line no-self-compare
-      if (value != value) return true;
-    // Array#indexOf ignores holes, Array#includes - not
-    } else for (;length > index; index++) if (IS_INCLUDES || index in O) {
-      if (O[index] === el) return IS_INCLUDES || index || 0;
-    } return !IS_INCLUDES && -1;
-  };
-};
-
-},{"./_to-absolute-index":73,"./_to-iobject":75,"./_to-length":76}],22:[function(require,module,exports){
-// getting tag from 19.1.3.6 Object.prototype.toString()
-var cof = require('./_cof');
-var TAG = require('./_wks')('toStringTag');
-// ES3 wrong here
-var ARG = cof(function () { return arguments; }()) == 'Arguments';
-
-// fallback for IE11 Script Access Denied error
-var tryGet = function (it, key) {
-  try {
-    return it[key];
-  } catch (e) { /* empty */ }
-};
-
-module.exports = function (it) {
-  var O, T, B;
-  return it === undefined ? 'Undefined' : it === null ? 'Null'
-    // @@toStringTag case
-    : typeof (T = tryGet(O = Object(it), TAG)) == 'string' ? T
-    // builtinTag case
-    : ARG ? cof(O)
-    // ES3 arguments fallback
-    : (B = cof(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
-};
-
-},{"./_cof":23,"./_wks":82}],23:[function(require,module,exports){
-var toString = {}.toString;
-
-module.exports = function (it) {
-  return toString.call(it).slice(8, -1);
-};
-
-},{}],24:[function(require,module,exports){
-var core = module.exports = { version: '2.6.4' };
-if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
-
-},{}],25:[function(require,module,exports){
-// optional / simple context binding
-var aFunction = require('./_a-function');
-module.exports = function (fn, that, length) {
-  aFunction(fn);
-  if (that === undefined) return fn;
-  switch (length) {
-    case 1: return function (a) {
-      return fn.call(that, a);
-    };
-    case 2: return function (a, b) {
-      return fn.call(that, a, b);
-    };
-    case 3: return function (a, b, c) {
-      return fn.call(that, a, b, c);
-    };
-  }
-  return function (/* ...args */) {
-    return fn.apply(that, arguments);
-  };
-};
-
-},{"./_a-function":17}],26:[function(require,module,exports){
-// 7.2.1 RequireObjectCoercible(argument)
-module.exports = function (it) {
-  if (it == undefined) throw TypeError("Can't call method on  " + it);
-  return it;
-};
-
-},{}],27:[function(require,module,exports){
-// Thank's IE8 for his funny defineProperty
-module.exports = !require('./_fails')(function () {
-  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
-});
-
-},{"./_fails":32}],28:[function(require,module,exports){
-var isObject = require('./_is-object');
-var document = require('./_global').document;
-// typeof document.createElement is 'object' in old IE
-var is = isObject(document) && isObject(document.createElement);
-module.exports = function (it) {
-  return is ? document.createElement(it) : {};
-};
-
-},{"./_global":36,"./_is-object":43}],29:[function(require,module,exports){
-// IE 8- don't enum bug keys
-module.exports = (
-  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
-).split(',');
-
-},{}],30:[function(require,module,exports){
-// all enumerable object keys, includes symbols
-var getKeys = require('./_object-keys');
-var gOPS = require('./_object-gops');
-var pIE = require('./_object-pie');
-module.exports = function (it) {
-  var result = getKeys(it);
-  var getSymbols = gOPS.f;
-  if (getSymbols) {
-    var symbols = getSymbols(it);
-    var isEnum = pIE.f;
-    var i = 0;
-    var key;
-    while (symbols.length > i) if (isEnum.call(it, key = symbols[i++])) result.push(key);
-  } return result;
-};
-
-},{"./_object-gops":57,"./_object-keys":60,"./_object-pie":61}],31:[function(require,module,exports){
-var global = require('./_global');
-var core = require('./_core');
-var hide = require('./_hide');
-var redefine = require('./_redefine');
-var ctx = require('./_ctx');
-var PROTOTYPE = 'prototype';
-
-var $export = function (type, name, source) {
-  var IS_FORCED = type & $export.F;
-  var IS_GLOBAL = type & $export.G;
-  var IS_STATIC = type & $export.S;
-  var IS_PROTO = type & $export.P;
-  var IS_BIND = type & $export.B;
-  var target = IS_GLOBAL ? global : IS_STATIC ? global[name] || (global[name] = {}) : (global[name] || {})[PROTOTYPE];
-  var exports = IS_GLOBAL ? core : core[name] || (core[name] = {});
-  var expProto = exports[PROTOTYPE] || (exports[PROTOTYPE] = {});
-  var key, own, out, exp;
-  if (IS_GLOBAL) source = name;
-  for (key in source) {
-    // contains in native
-    own = !IS_FORCED && target && target[key] !== undefined;
-    // export native or passed
-    out = (own ? target : source)[key];
-    // bind timers to global for call from export context
-    exp = IS_BIND && own ? ctx(out, global) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
-    // extend global
-    if (target) redefine(target, key, out, type & $export.U);
-    // export
-    if (exports[key] != out) hide(exports, key, exp);
-    if (IS_PROTO && expProto[key] != out) expProto[key] = out;
-  }
-};
-global.core = core;
-// type bitmap
-$export.F = 1;   // forced
-$export.G = 2;   // global
-$export.S = 4;   // static
-$export.P = 8;   // proto
-$export.B = 16;  // bind
-$export.W = 32;  // wrap
-$export.U = 64;  // safe
-$export.R = 128; // real proto method for `library`
-module.exports = $export;
-
-},{"./_core":24,"./_ctx":25,"./_global":36,"./_hide":38,"./_redefine":63}],32:[function(require,module,exports){
-module.exports = function (exec) {
-  try {
-    return !!exec();
-  } catch (e) {
-    return true;
-  }
-};
-
-},{}],33:[function(require,module,exports){
-'use strict';
-require('./es6.regexp.exec');
-var redefine = require('./_redefine');
-var hide = require('./_hide');
-var fails = require('./_fails');
-var defined = require('./_defined');
-var wks = require('./_wks');
-var regexpExec = require('./_regexp-exec');
-
-var SPECIES = wks('species');
-
-var REPLACE_SUPPORTS_NAMED_GROUPS = !fails(function () {
-  // #replace needs built-in support for named groups.
-  // #match works fine because it just return the exec results, even if it has
-  // a "grops" property.
-  var re = /./;
-  re.exec = function () {
-    var result = [];
-    result.groups = { a: '7' };
-    return result;
-  };
-  return ''.replace(re, '$<a>') !== '7';
-});
-
-var SPLIT_WORKS_WITH_OVERWRITTEN_EXEC = (function () {
-  // Chrome 51 has a buggy "split" implementation when RegExp#exec !== nativeExec
-  var re = /(?:)/;
-  var originalExec = re.exec;
-  re.exec = function () { return originalExec.apply(this, arguments); };
-  var result = 'ab'.split(re);
-  return result.length === 2 && result[0] === 'a' && result[1] === 'b';
-})();
-
-module.exports = function (KEY, length, exec) {
-  var SYMBOL = wks(KEY);
-
-  var DELEGATES_TO_SYMBOL = !fails(function () {
-    // String methods call symbol-named RegEp methods
-    var O = {};
-    O[SYMBOL] = function () { return 7; };
-    return ''[KEY](O) != 7;
-  });
-
-  var DELEGATES_TO_EXEC = DELEGATES_TO_SYMBOL ? !fails(function () {
-    // Symbol-named RegExp methods call .exec
-    var execCalled = false;
-    var re = /a/;
-    re.exec = function () { execCalled = true; return null; };
-    if (KEY === 'split') {
-      // RegExp[@@split] doesn't call the regex's exec method, but first creates
-      // a new one. We need to return the patched regex when creating the new one.
-      re.constructor = {};
-      re.constructor[SPECIES] = function () { return re; };
-    }
-    re[SYMBOL]('');
-    return !execCalled;
-  }) : undefined;
-
-  if (
-    !DELEGATES_TO_SYMBOL ||
-    !DELEGATES_TO_EXEC ||
-    (KEY === 'replace' && !REPLACE_SUPPORTS_NAMED_GROUPS) ||
-    (KEY === 'split' && !SPLIT_WORKS_WITH_OVERWRITTEN_EXEC)
-  ) {
-    var nativeRegExpMethod = /./[SYMBOL];
-    var fns = exec(
-      defined,
-      SYMBOL,
-      ''[KEY],
-      function maybeCallNative(nativeMethod, regexp, str, arg2, forceStringMethod) {
-        if (regexp.exec === regexpExec) {
-          if (DELEGATES_TO_SYMBOL && !forceStringMethod) {
-            // The native String method already delegates to @@method (this
-            // polyfilled function), leasing to infinite recursion.
-            // We avoid it by directly calling the native @@method method.
-            return { done: true, value: nativeRegExpMethod.call(regexp, str, arg2) };
-          }
-          return { done: true, value: nativeMethod.call(str, regexp, arg2) };
-        }
-        return { done: false };
-      }
-    );
-    var strfn = fns[0];
-    var rxfn = fns[1];
-
-    redefine(String.prototype, KEY, strfn);
-    hide(RegExp.prototype, SYMBOL, length == 2
-      // 21.2.5.8 RegExp.prototype[@@replace](string, replaceValue)
-      // 21.2.5.11 RegExp.prototype[@@split](string, limit)
-      ? function (string, arg) { return rxfn.call(string, this, arg); }
-      // 21.2.5.6 RegExp.prototype[@@match](string)
-      // 21.2.5.9 RegExp.prototype[@@search](string)
-      : function (string) { return rxfn.call(string, this); }
-    );
-  }
-};
-
-},{"./_defined":26,"./_fails":32,"./_hide":38,"./_redefine":63,"./_regexp-exec":65,"./_wks":82,"./es6.regexp.exec":85}],34:[function(require,module,exports){
-'use strict';
-// 21.2.5.3 get RegExp.prototype.flags
-var anObject = require('./_an-object');
-module.exports = function () {
-  var that = anObject(this);
-  var result = '';
-  if (that.global) result += 'g';
-  if (that.ignoreCase) result += 'i';
-  if (that.multiline) result += 'm';
-  if (that.unicode) result += 'u';
-  if (that.sticky) result += 'y';
-  return result;
-};
-
-},{"./_an-object":20}],35:[function(require,module,exports){
-module.exports = require('./_shared')('native-function-to-string', Function.toString);
-
-},{"./_shared":69}],36:[function(require,module,exports){
-// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
-var global = module.exports = typeof window != 'undefined' && window.Math == Math
-  ? window : typeof self != 'undefined' && self.Math == Math ? self
-  // eslint-disable-next-line no-new-func
-  : Function('return this')();
-if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
-
-},{}],37:[function(require,module,exports){
-var hasOwnProperty = {}.hasOwnProperty;
-module.exports = function (it, key) {
-  return hasOwnProperty.call(it, key);
-};
-
-},{}],38:[function(require,module,exports){
-var dP = require('./_object-dp');
-var createDesc = require('./_property-desc');
-module.exports = require('./_descriptors') ? function (object, key, value) {
-  return dP.f(object, key, createDesc(1, value));
-} : function (object, key, value) {
-  object[key] = value;
-  return object;
-};
-
-},{"./_descriptors":27,"./_object-dp":52,"./_property-desc":62}],39:[function(require,module,exports){
-var document = require('./_global').document;
-module.exports = document && document.documentElement;
-
-},{"./_global":36}],40:[function(require,module,exports){
-module.exports = !require('./_descriptors') && !require('./_fails')(function () {
-  return Object.defineProperty(require('./_dom-create')('div'), 'a', { get: function () { return 7; } }).a != 7;
-});
-
-},{"./_descriptors":27,"./_dom-create":28,"./_fails":32}],41:[function(require,module,exports){
-// fallback for non-array-like ES3 and non-enumerable old V8 strings
-var cof = require('./_cof');
-// eslint-disable-next-line no-prototype-builtins
-module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
-  return cof(it) == 'String' ? it.split('') : Object(it);
-};
-
-},{"./_cof":23}],42:[function(require,module,exports){
-// 7.2.2 IsArray(argument)
-var cof = require('./_cof');
-module.exports = Array.isArray || function isArray(arg) {
-  return cof(arg) == 'Array';
-};
-
-},{"./_cof":23}],43:[function(require,module,exports){
-module.exports = function (it) {
-  return typeof it === 'object' ? it !== null : typeof it === 'function';
-};
-
-},{}],44:[function(require,module,exports){
-// 7.2.8 IsRegExp(argument)
-var isObject = require('./_is-object');
-var cof = require('./_cof');
-var MATCH = require('./_wks')('match');
-module.exports = function (it) {
-  var isRegExp;
-  return isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : cof(it) == 'RegExp');
-};
-
-},{"./_cof":23,"./_is-object":43,"./_wks":82}],45:[function(require,module,exports){
-'use strict';
-var create = require('./_object-create');
-var descriptor = require('./_property-desc');
-var setToStringTag = require('./_set-to-string-tag');
-var IteratorPrototype = {};
-
-// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
-require('./_hide')(IteratorPrototype, require('./_wks')('iterator'), function () { return this; });
-
-module.exports = function (Constructor, NAME, next) {
-  Constructor.prototype = create(IteratorPrototype, { next: descriptor(1, next) });
-  setToStringTag(Constructor, NAME + ' Iterator');
-};
-
-},{"./_hide":38,"./_object-create":51,"./_property-desc":62,"./_set-to-string-tag":67,"./_wks":82}],46:[function(require,module,exports){
-'use strict';
-var LIBRARY = require('./_library');
-var $export = require('./_export');
-var redefine = require('./_redefine');
-var hide = require('./_hide');
-var Iterators = require('./_iterators');
-var $iterCreate = require('./_iter-create');
-var setToStringTag = require('./_set-to-string-tag');
-var getPrototypeOf = require('./_object-gpo');
-var ITERATOR = require('./_wks')('iterator');
-var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
-var FF_ITERATOR = '@@iterator';
-var KEYS = 'keys';
-var VALUES = 'values';
-
-var returnThis = function () { return this; };
-
-module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED) {
-  $iterCreate(Constructor, NAME, next);
-  var getMethod = function (kind) {
-    if (!BUGGY && kind in proto) return proto[kind];
-    switch (kind) {
-      case KEYS: return function keys() { return new Constructor(this, kind); };
-      case VALUES: return function values() { return new Constructor(this, kind); };
-    } return function entries() { return new Constructor(this, kind); };
-  };
-  var TAG = NAME + ' Iterator';
-  var DEF_VALUES = DEFAULT == VALUES;
-  var VALUES_BUG = false;
-  var proto = Base.prototype;
-  var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
-  var $default = $native || getMethod(DEFAULT);
-  var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
-  var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
-  var methods, key, IteratorPrototype;
-  // Fix native
-  if ($anyNative) {
-    IteratorPrototype = getPrototypeOf($anyNative.call(new Base()));
-    if (IteratorPrototype !== Object.prototype && IteratorPrototype.next) {
-      // Set @@toStringTag to native iterators
-      setToStringTag(IteratorPrototype, TAG, true);
-      // fix for some old engines
-      if (!LIBRARY && typeof IteratorPrototype[ITERATOR] != 'function') hide(IteratorPrototype, ITERATOR, returnThis);
-    }
-  }
-  // fix Array#{values, @@iterator}.name in V8 / FF
-  if (DEF_VALUES && $native && $native.name !== VALUES) {
-    VALUES_BUG = true;
-    $default = function values() { return $native.call(this); };
-  }
-  // Define iterator
-  if ((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])) {
-    hide(proto, ITERATOR, $default);
-  }
-  // Plug for library
-  Iterators[NAME] = $default;
-  Iterators[TAG] = returnThis;
-  if (DEFAULT) {
-    methods = {
-      values: DEF_VALUES ? $default : getMethod(VALUES),
-      keys: IS_SET ? $default : getMethod(KEYS),
-      entries: $entries
-    };
-    if (FORCED) for (key in methods) {
-      if (!(key in proto)) redefine(proto, key, methods[key]);
-    } else $export($export.P + $export.F * (BUGGY || VALUES_BUG), NAME, methods);
-  }
-  return methods;
-};
-
-},{"./_export":31,"./_hide":38,"./_iter-create":45,"./_iterators":48,"./_library":49,"./_object-gpo":58,"./_redefine":63,"./_set-to-string-tag":67,"./_wks":82}],47:[function(require,module,exports){
-module.exports = function (done, value) {
-  return { value: value, done: !!done };
-};
-
-},{}],48:[function(require,module,exports){
-module.exports = {};
-
-},{}],49:[function(require,module,exports){
-module.exports = false;
-
-},{}],50:[function(require,module,exports){
-var META = require('./_uid')('meta');
-var isObject = require('./_is-object');
-var has = require('./_has');
-var setDesc = require('./_object-dp').f;
-var id = 0;
-var isExtensible = Object.isExtensible || function () {
-  return true;
-};
-var FREEZE = !require('./_fails')(function () {
-  return isExtensible(Object.preventExtensions({}));
-});
-var setMeta = function (it) {
-  setDesc(it, META, { value: {
-    i: 'O' + ++id, // object ID
-    w: {}          // weak collections IDs
-  } });
-};
-var fastKey = function (it, create) {
-  // return primitive with prefix
-  if (!isObject(it)) return typeof it == 'symbol' ? it : (typeof it == 'string' ? 'S' : 'P') + it;
-  if (!has(it, META)) {
-    // can't set metadata to uncaught frozen object
-    if (!isExtensible(it)) return 'F';
-    // not necessary to add metadata
-    if (!create) return 'E';
-    // add missing metadata
-    setMeta(it);
-  // return object ID
-  } return it[META].i;
-};
-var getWeak = function (it, create) {
-  if (!has(it, META)) {
-    // can't set metadata to uncaught frozen object
-    if (!isExtensible(it)) return true;
-    // not necessary to add metadata
-    if (!create) return false;
-    // add missing metadata
-    setMeta(it);
-  // return hash weak collections IDs
-  } return it[META].w;
-};
-// add metadata on freeze-family methods calling
-var onFreeze = function (it) {
-  if (FREEZE && meta.NEED && isExtensible(it) && !has(it, META)) setMeta(it);
-  return it;
-};
-var meta = module.exports = {
-  KEY: META,
-  NEED: false,
-  fastKey: fastKey,
-  getWeak: getWeak,
-  onFreeze: onFreeze
-};
-
-},{"./_fails":32,"./_has":37,"./_is-object":43,"./_object-dp":52,"./_uid":79}],51:[function(require,module,exports){
-// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
-var anObject = require('./_an-object');
-var dPs = require('./_object-dps');
-var enumBugKeys = require('./_enum-bug-keys');
-var IE_PROTO = require('./_shared-key')('IE_PROTO');
-var Empty = function () { /* empty */ };
-var PROTOTYPE = 'prototype';
-
-// Create object with fake `null` prototype: use iframe Object with cleared prototype
-var createDict = function () {
-  // Thrash, waste and sodomy: IE GC bug
-  var iframe = require('./_dom-create')('iframe');
-  var i = enumBugKeys.length;
-  var lt = '<';
-  var gt = '>';
-  var iframeDocument;
-  iframe.style.display = 'none';
-  require('./_html').appendChild(iframe);
-  iframe.src = 'javascript:'; // eslint-disable-line no-script-url
-  // createDict = iframe.contentWindow.Object;
-  // html.removeChild(iframe);
-  iframeDocument = iframe.contentWindow.document;
-  iframeDocument.open();
-  iframeDocument.write(lt + 'script' + gt + 'document.F=Object' + lt + '/script' + gt);
-  iframeDocument.close();
-  createDict = iframeDocument.F;
-  while (i--) delete createDict[PROTOTYPE][enumBugKeys[i]];
-  return createDict();
-};
-
-module.exports = Object.create || function create(O, Properties) {
-  var result;
-  if (O !== null) {
-    Empty[PROTOTYPE] = anObject(O);
-    result = new Empty();
-    Empty[PROTOTYPE] = null;
-    // add "__proto__" for Object.getPrototypeOf polyfill
-    result[IE_PROTO] = O;
-  } else result = createDict();
-  return Properties === undefined ? result : dPs(result, Properties);
-};
-
-},{"./_an-object":20,"./_dom-create":28,"./_enum-bug-keys":29,"./_html":39,"./_object-dps":53,"./_shared-key":68}],52:[function(require,module,exports){
-var anObject = require('./_an-object');
-var IE8_DOM_DEFINE = require('./_ie8-dom-define');
-var toPrimitive = require('./_to-primitive');
-var dP = Object.defineProperty;
-
-exports.f = require('./_descriptors') ? Object.defineProperty : function defineProperty(O, P, Attributes) {
-  anObject(O);
-  P = toPrimitive(P, true);
-  anObject(Attributes);
-  if (IE8_DOM_DEFINE) try {
-    return dP(O, P, Attributes);
-  } catch (e) { /* empty */ }
-  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported!');
-  if ('value' in Attributes) O[P] = Attributes.value;
-  return O;
-};
-
-},{"./_an-object":20,"./_descriptors":27,"./_ie8-dom-define":40,"./_to-primitive":78}],53:[function(require,module,exports){
-var dP = require('./_object-dp');
-var anObject = require('./_an-object');
-var getKeys = require('./_object-keys');
-
-module.exports = require('./_descriptors') ? Object.defineProperties : function defineProperties(O, Properties) {
-  anObject(O);
-  var keys = getKeys(Properties);
-  var length = keys.length;
-  var i = 0;
-  var P;
-  while (length > i) dP.f(O, P = keys[i++], Properties[P]);
-  return O;
-};
-
-},{"./_an-object":20,"./_descriptors":27,"./_object-dp":52,"./_object-keys":60}],54:[function(require,module,exports){
-var pIE = require('./_object-pie');
-var createDesc = require('./_property-desc');
-var toIObject = require('./_to-iobject');
-var toPrimitive = require('./_to-primitive');
-var has = require('./_has');
-var IE8_DOM_DEFINE = require('./_ie8-dom-define');
-var gOPD = Object.getOwnPropertyDescriptor;
-
-exports.f = require('./_descriptors') ? gOPD : function getOwnPropertyDescriptor(O, P) {
-  O = toIObject(O);
-  P = toPrimitive(P, true);
-  if (IE8_DOM_DEFINE) try {
-    return gOPD(O, P);
-  } catch (e) { /* empty */ }
-  if (has(O, P)) return createDesc(!pIE.f.call(O, P), O[P]);
-};
-
-},{"./_descriptors":27,"./_has":37,"./_ie8-dom-define":40,"./_object-pie":61,"./_property-desc":62,"./_to-iobject":75,"./_to-primitive":78}],55:[function(require,module,exports){
-// fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
-var toIObject = require('./_to-iobject');
-var gOPN = require('./_object-gopn').f;
-var toString = {}.toString;
-
-var windowNames = typeof window == 'object' && window && Object.getOwnPropertyNames
-  ? Object.getOwnPropertyNames(window) : [];
-
-var getWindowNames = function (it) {
-  try {
-    return gOPN(it);
-  } catch (e) {
-    return windowNames.slice();
-  }
-};
-
-module.exports.f = function getOwnPropertyNames(it) {
-  return windowNames && toString.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(toIObject(it));
-};
-
-},{"./_object-gopn":56,"./_to-iobject":75}],56:[function(require,module,exports){
-// 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
-var $keys = require('./_object-keys-internal');
-var hiddenKeys = require('./_enum-bug-keys').concat('length', 'prototype');
-
-exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
-  return $keys(O, hiddenKeys);
-};
-
-},{"./_enum-bug-keys":29,"./_object-keys-internal":59}],57:[function(require,module,exports){
-exports.f = Object.getOwnPropertySymbols;
-
-},{}],58:[function(require,module,exports){
-// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
-var has = require('./_has');
-var toObject = require('./_to-object');
-var IE_PROTO = require('./_shared-key')('IE_PROTO');
-var ObjectProto = Object.prototype;
-
-module.exports = Object.getPrototypeOf || function (O) {
-  O = toObject(O);
-  if (has(O, IE_PROTO)) return O[IE_PROTO];
-  if (typeof O.constructor == 'function' && O instanceof O.constructor) {
-    return O.constructor.prototype;
-  } return O instanceof Object ? ObjectProto : null;
-};
-
-},{"./_has":37,"./_shared-key":68,"./_to-object":77}],59:[function(require,module,exports){
-var has = require('./_has');
-var toIObject = require('./_to-iobject');
-var arrayIndexOf = require('./_array-includes')(false);
-var IE_PROTO = require('./_shared-key')('IE_PROTO');
-
-module.exports = function (object, names) {
-  var O = toIObject(object);
-  var i = 0;
-  var result = [];
-  var key;
-  for (key in O) if (key != IE_PROTO) has(O, key) && result.push(key);
-  // Don't enum bug & hidden keys
-  while (names.length > i) if (has(O, key = names[i++])) {
-    ~arrayIndexOf(result, key) || result.push(key);
-  }
-  return result;
-};
-
-},{"./_array-includes":21,"./_has":37,"./_shared-key":68,"./_to-iobject":75}],60:[function(require,module,exports){
-// 19.1.2.14 / 15.2.3.14 Object.keys(O)
-var $keys = require('./_object-keys-internal');
-var enumBugKeys = require('./_enum-bug-keys');
-
-module.exports = Object.keys || function keys(O) {
-  return $keys(O, enumBugKeys);
-};
-
-},{"./_enum-bug-keys":29,"./_object-keys-internal":59}],61:[function(require,module,exports){
-exports.f = {}.propertyIsEnumerable;
-
-},{}],62:[function(require,module,exports){
-module.exports = function (bitmap, value) {
-  return {
-    enumerable: !(bitmap & 1),
-    configurable: !(bitmap & 2),
-    writable: !(bitmap & 4),
-    value: value
-  };
-};
-
-},{}],63:[function(require,module,exports){
-var global = require('./_global');
-var hide = require('./_hide');
-var has = require('./_has');
-var SRC = require('./_uid')('src');
-var $toString = require('./_function-to-string');
-var TO_STRING = 'toString';
-var TPL = ('' + $toString).split(TO_STRING);
-
-require('./_core').inspectSource = function (it) {
-  return $toString.call(it);
-};
-
-(module.exports = function (O, key, val, safe) {
-  var isFunction = typeof val == 'function';
-  if (isFunction) has(val, 'name') || hide(val, 'name', key);
-  if (O[key] === val) return;
-  if (isFunction) has(val, SRC) || hide(val, SRC, O[key] ? '' + O[key] : TPL.join(String(key)));
-  if (O === global) {
-    O[key] = val;
-  } else if (!safe) {
-    delete O[key];
-    hide(O, key, val);
-  } else if (O[key]) {
-    O[key] = val;
-  } else {
-    hide(O, key, val);
-  }
-// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
-})(Function.prototype, TO_STRING, function toString() {
-  return typeof this == 'function' && this[SRC] || $toString.call(this);
-});
-
-},{"./_core":24,"./_function-to-string":35,"./_global":36,"./_has":37,"./_hide":38,"./_uid":79}],64:[function(require,module,exports){
-'use strict';
-
-var classof = require('./_classof');
-var builtinExec = RegExp.prototype.exec;
-
- // `RegExpExec` abstract operation
-// https://tc39.github.io/ecma262/#sec-regexpexec
-module.exports = function (R, S) {
-  var exec = R.exec;
-  if (typeof exec === 'function') {
-    var result = exec.call(R, S);
-    if (typeof result !== 'object') {
-      throw new TypeError('RegExp exec method returned something other than an Object or null');
-    }
-    return result;
-  }
-  if (classof(R) !== 'RegExp') {
-    throw new TypeError('RegExp#exec called on incompatible receiver');
-  }
-  return builtinExec.call(R, S);
-};
-
-},{"./_classof":22}],65:[function(require,module,exports){
-'use strict';
-
-var regexpFlags = require('./_flags');
-
-var nativeExec = RegExp.prototype.exec;
-// This always refers to the native implementation, because the
-// String#replace polyfill uses ./fix-regexp-well-known-symbol-logic.js,
-// which loads this file before patching the method.
-var nativeReplace = String.prototype.replace;
-
-var patchedExec = nativeExec;
-
-var LAST_INDEX = 'lastIndex';
-
-var UPDATES_LAST_INDEX_WRONG = (function () {
-  var re1 = /a/,
-      re2 = /b*/g;
-  nativeExec.call(re1, 'a');
-  nativeExec.call(re2, 'a');
-  return re1[LAST_INDEX] !== 0 || re2[LAST_INDEX] !== 0;
-})();
-
-// nonparticipating capturing group, copied from es5-shim's String#split patch.
-var NPCG_INCLUDED = /()??/.exec('')[1] !== undefined;
-
-var PATCH = UPDATES_LAST_INDEX_WRONG || NPCG_INCLUDED;
-
-if (PATCH) {
-  patchedExec = function exec(str) {
-    var re = this;
-    var lastIndex, reCopy, match, i;
-
-    if (NPCG_INCLUDED) {
-      reCopy = new RegExp('^' + re.source + '$(?!\\s)', regexpFlags.call(re));
-    }
-    if (UPDATES_LAST_INDEX_WRONG) lastIndex = re[LAST_INDEX];
-
-    match = nativeExec.call(re, str);
-
-    if (UPDATES_LAST_INDEX_WRONG && match) {
-      re[LAST_INDEX] = re.global ? match.index + match[0].length : lastIndex;
-    }
-    if (NPCG_INCLUDED && match && match.length > 1) {
-      // Fix browsers whose `exec` methods don't consistently return `undefined`
-      // for NPCG, like IE8. NOTE: This doesn' work for /(.?)?/
-      // eslint-disable-next-line no-loop-func
-      nativeReplace.call(match[0], reCopy, function () {
-        for (i = 1; i < arguments.length - 2; i++) {
-          if (arguments[i] === undefined) match[i] = undefined;
-        }
-      });
-    }
-
-    return match;
-  };
-}
-
-module.exports = patchedExec;
-
-},{"./_flags":34}],66:[function(require,module,exports){
-// 7.2.9 SameValue(x, y)
-module.exports = Object.is || function is(x, y) {
-  // eslint-disable-next-line no-self-compare
-  return x === y ? x !== 0 || 1 / x === 1 / y : x != x && y != y;
-};
-
-},{}],67:[function(require,module,exports){
-var def = require('./_object-dp').f;
-var has = require('./_has');
-var TAG = require('./_wks')('toStringTag');
-
-module.exports = function (it, tag, stat) {
-  if (it && !has(it = stat ? it : it.prototype, TAG)) def(it, TAG, { configurable: true, value: tag });
-};
-
-},{"./_has":37,"./_object-dp":52,"./_wks":82}],68:[function(require,module,exports){
-var shared = require('./_shared')('keys');
-var uid = require('./_uid');
-module.exports = function (key) {
-  return shared[key] || (shared[key] = uid(key));
-};
-
-},{"./_shared":69,"./_uid":79}],69:[function(require,module,exports){
-var core = require('./_core');
-var global = require('./_global');
-var SHARED = '__core-js_shared__';
-var store = global[SHARED] || (global[SHARED] = {});
-
-(module.exports = function (key, value) {
-  return store[key] || (store[key] = value !== undefined ? value : {});
-})('versions', []).push({
-  version: core.version,
-  mode: require('./_library') ? 'pure' : 'global',
-  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
-});
-
-},{"./_core":24,"./_global":36,"./_library":49}],70:[function(require,module,exports){
-// 7.3.20 SpeciesConstructor(O, defaultConstructor)
-var anObject = require('./_an-object');
-var aFunction = require('./_a-function');
-var SPECIES = require('./_wks')('species');
-module.exports = function (O, D) {
-  var C = anObject(O).constructor;
-  var S;
-  return C === undefined || (S = anObject(C)[SPECIES]) == undefined ? D : aFunction(S);
-};
-
-},{"./_a-function":17,"./_an-object":20,"./_wks":82}],71:[function(require,module,exports){
-'use strict';
-var fails = require('./_fails');
-
-module.exports = function (method, arg) {
-  return !!method && fails(function () {
-    // eslint-disable-next-line no-useless-call
-    arg ? method.call(null, function () { /* empty */ }, 1) : method.call(null);
-  });
-};
-
-},{"./_fails":32}],72:[function(require,module,exports){
-var toInteger = require('./_to-integer');
-var defined = require('./_defined');
-// true  -> String#at
-// false -> String#codePointAt
-module.exports = function (TO_STRING) {
-  return function (that, pos) {
-    var s = String(defined(that));
-    var i = toInteger(pos);
-    var l = s.length;
-    var a, b;
-    if (i < 0 || i >= l) return TO_STRING ? '' : undefined;
-    a = s.charCodeAt(i);
-    return a < 0xd800 || a > 0xdbff || i + 1 === l || (b = s.charCodeAt(i + 1)) < 0xdc00 || b > 0xdfff
-      ? TO_STRING ? s.charAt(i) : a
-      : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
-  };
-};
-
-},{"./_defined":26,"./_to-integer":74}],73:[function(require,module,exports){
-var toInteger = require('./_to-integer');
-var max = Math.max;
-var min = Math.min;
-module.exports = function (index, length) {
-  index = toInteger(index);
-  return index < 0 ? max(index + length, 0) : min(index, length);
-};
-
-},{"./_to-integer":74}],74:[function(require,module,exports){
-// 7.1.4 ToInteger
-var ceil = Math.ceil;
-var floor = Math.floor;
-module.exports = function (it) {
-  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
-};
-
-},{}],75:[function(require,module,exports){
-// to indexed object, toObject with fallback for non-array-like ES3 strings
-var IObject = require('./_iobject');
-var defined = require('./_defined');
-module.exports = function (it) {
-  return IObject(defined(it));
-};
-
-},{"./_defined":26,"./_iobject":41}],76:[function(require,module,exports){
-// 7.1.15 ToLength
-var toInteger = require('./_to-integer');
-var min = Math.min;
-module.exports = function (it) {
-  return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
-};
-
-},{"./_to-integer":74}],77:[function(require,module,exports){
-// 7.1.13 ToObject(argument)
-var defined = require('./_defined');
-module.exports = function (it) {
-  return Object(defined(it));
-};
-
-},{"./_defined":26}],78:[function(require,module,exports){
-// 7.1.1 ToPrimitive(input [, PreferredType])
-var isObject = require('./_is-object');
-// instead of the ES6 spec version, we didn't implement @@toPrimitive case
-// and the second argument - flag - preferred type is a string
-module.exports = function (it, S) {
-  if (!isObject(it)) return it;
-  var fn, val;
-  if (S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
-  if (typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it))) return val;
-  if (!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
-  throw TypeError("Can't convert object to primitive value");
-};
-
-},{"./_is-object":43}],79:[function(require,module,exports){
-var id = 0;
-var px = Math.random();
-module.exports = function (key) {
-  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
-};
-
-},{}],80:[function(require,module,exports){
-var global = require('./_global');
-var core = require('./_core');
-var LIBRARY = require('./_library');
-var wksExt = require('./_wks-ext');
-var defineProperty = require('./_object-dp').f;
-module.exports = function (name) {
-  var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
-  if (name.charAt(0) != '_' && !(name in $Symbol)) defineProperty($Symbol, name, { value: wksExt.f(name) });
-};
-
-},{"./_core":24,"./_global":36,"./_library":49,"./_object-dp":52,"./_wks-ext":81}],81:[function(require,module,exports){
-exports.f = require('./_wks');
-
-},{"./_wks":82}],82:[function(require,module,exports){
-var store = require('./_shared')('wks');
-var uid = require('./_uid');
-var Symbol = require('./_global').Symbol;
-var USE_SYMBOL = typeof Symbol == 'function';
-
-var $exports = module.exports = function (name) {
-  return store[name] || (store[name] =
-    USE_SYMBOL && Symbol[name] || (USE_SYMBOL ? Symbol : uid)('Symbol.' + name));
-};
-
-$exports.store = store;
-
-},{"./_global":36,"./_shared":69,"./_uid":79}],83:[function(require,module,exports){
-'use strict';
-var addToUnscopables = require('./_add-to-unscopables');
-var step = require('./_iter-step');
-var Iterators = require('./_iterators');
-var toIObject = require('./_to-iobject');
-
-// 22.1.3.4 Array.prototype.entries()
-// 22.1.3.13 Array.prototype.keys()
-// 22.1.3.29 Array.prototype.values()
-// 22.1.3.30 Array.prototype[@@iterator]()
-module.exports = require('./_iter-define')(Array, 'Array', function (iterated, kind) {
-  this._t = toIObject(iterated); // target
-  this._i = 0;                   // next index
-  this._k = kind;                // kind
-// 22.1.5.2.1 %ArrayIteratorPrototype%.next()
-}, function () {
-  var O = this._t;
-  var kind = this._k;
-  var index = this._i++;
-  if (!O || index >= O.length) {
-    this._t = undefined;
-    return step(1);
-  }
-  if (kind == 'keys') return step(0, index);
-  if (kind == 'values') return step(0, O[index]);
-  return step(0, [index, O[index]]);
-}, 'values');
-
-// argumentsList[@@iterator] is %ArrayProto_values% (9.4.4.6, 9.4.4.7)
-Iterators.Arguments = Iterators.Array;
-
-addToUnscopables('keys');
-addToUnscopables('values');
-addToUnscopables('entries');
-
-},{"./_add-to-unscopables":18,"./_iter-define":46,"./_iter-step":47,"./_iterators":48,"./_to-iobject":75}],84:[function(require,module,exports){
-'use strict';
-var $export = require('./_export');
-var aFunction = require('./_a-function');
-var toObject = require('./_to-object');
-var fails = require('./_fails');
-var $sort = [].sort;
-var test = [1, 2, 3];
-
-$export($export.P + $export.F * (fails(function () {
-  // IE8-
-  test.sort(undefined);
-}) || !fails(function () {
-  // V8 bug
-  test.sort(null);
-  // Old WebKit
-}) || !require('./_strict-method')($sort)), 'Array', {
-  // 22.1.3.25 Array.prototype.sort(comparefn)
-  sort: function sort(comparefn) {
-    return comparefn === undefined
-      ? $sort.call(toObject(this))
-      : $sort.call(toObject(this), aFunction(comparefn));
-  }
-});
-
-},{"./_a-function":17,"./_export":31,"./_fails":32,"./_strict-method":71,"./_to-object":77}],85:[function(require,module,exports){
-'use strict';
-var regexpExec = require('./_regexp-exec');
-require('./_export')({
-  target: 'RegExp',
-  proto: true,
-  forced: regexpExec !== /./.exec
-}, {
-  exec: regexpExec
-});
-
-},{"./_export":31,"./_regexp-exec":65}],86:[function(require,module,exports){
-'use strict';
-
-var anObject = require('./_an-object');
-var toLength = require('./_to-length');
-var advanceStringIndex = require('./_advance-string-index');
-var regExpExec = require('./_regexp-exec-abstract');
-
-// @@match logic
-require('./_fix-re-wks')('match', 1, function (defined, MATCH, $match, maybeCallNative) {
-  return [
-    // `String.prototype.match` method
-    // https://tc39.github.io/ecma262/#sec-string.prototype.match
-    function match(regexp) {
-      var O = defined(this);
-      var fn = regexp == undefined ? undefined : regexp[MATCH];
-      return fn !== undefined ? fn.call(regexp, O) : new RegExp(regexp)[MATCH](String(O));
-    },
-    // `RegExp.prototype[@@match]` method
-    // https://tc39.github.io/ecma262/#sec-regexp.prototype-@@match
-    function (regexp) {
-      var res = maybeCallNative($match, regexp, this);
-      if (res.done) return res.value;
-      var rx = anObject(regexp);
-      var S = String(this);
-      if (!rx.global) return regExpExec(rx, S);
-      var fullUnicode = rx.unicode;
-      rx.lastIndex = 0;
-      var A = [];
-      var n = 0;
-      var result;
-      while ((result = regExpExec(rx, S)) !== null) {
-        var matchStr = String(result[0]);
-        A[n] = matchStr;
-        if (matchStr === '') rx.lastIndex = advanceStringIndex(S, toLength(rx.lastIndex), fullUnicode);
-        n++;
-      }
-      return n === 0 ? null : A;
-    }
-  ];
-});
-
-},{"./_advance-string-index":19,"./_an-object":20,"./_fix-re-wks":33,"./_regexp-exec-abstract":64,"./_to-length":76}],87:[function(require,module,exports){
-'use strict';
-
-var anObject = require('./_an-object');
-var toObject = require('./_to-object');
-var toLength = require('./_to-length');
-var toInteger = require('./_to-integer');
-var advanceStringIndex = require('./_advance-string-index');
-var regExpExec = require('./_regexp-exec-abstract');
-var max = Math.max;
-var min = Math.min;
-var floor = Math.floor;
-var SUBSTITUTION_SYMBOLS = /\$([$&`']|\d\d?|<[^>]*>)/g;
-var SUBSTITUTION_SYMBOLS_NO_NAMED = /\$([$&`']|\d\d?)/g;
-
-var maybeToString = function (it) {
-  return it === undefined ? it : String(it);
-};
-
-// @@replace logic
-require('./_fix-re-wks')('replace', 2, function (defined, REPLACE, $replace, maybeCallNative) {
-  return [
-    // `String.prototype.replace` method
-    // https://tc39.github.io/ecma262/#sec-string.prototype.replace
-    function replace(searchValue, replaceValue) {
-      var O = defined(this);
-      var fn = searchValue == undefined ? undefined : searchValue[REPLACE];
-      return fn !== undefined
-        ? fn.call(searchValue, O, replaceValue)
-        : $replace.call(String(O), searchValue, replaceValue);
-    },
-    // `RegExp.prototype[@@replace]` method
-    // https://tc39.github.io/ecma262/#sec-regexp.prototype-@@replace
-    function (regexp, replaceValue) {
-      var res = maybeCallNative($replace, regexp, this, replaceValue);
-      if (res.done) return res.value;
-
-      var rx = anObject(regexp);
-      var S = String(this);
-      var functionalReplace = typeof replaceValue === 'function';
-      if (!functionalReplace) replaceValue = String(replaceValue);
-      var global = rx.global;
-      if (global) {
-        var fullUnicode = rx.unicode;
-        rx.lastIndex = 0;
-      }
-      var results = [];
-      while (true) {
-        var result = regExpExec(rx, S);
-        if (result === null) break;
-        results.push(result);
-        if (!global) break;
-        var matchStr = String(result[0]);
-        if (matchStr === '') rx.lastIndex = advanceStringIndex(S, toLength(rx.lastIndex), fullUnicode);
-      }
-      var accumulatedResult = '';
-      var nextSourcePosition = 0;
-      for (var i = 0; i < results.length; i++) {
-        result = results[i];
-        var matched = String(result[0]);
-        var position = max(min(toInteger(result.index), S.length), 0);
-        var captures = [];
-        // NOTE: This is equivalent to
-        //   captures = result.slice(1).map(maybeToString)
-        // but for some reason `nativeSlice.call(result, 1, result.length)` (called in
-        // the slice polyfill when slicing native arrays) "doesn't work" in safari 9 and
-        // causes a crash (https://pastebin.com/N21QzeQA) when trying to debug it.
-        for (var j = 1; j < result.length; j++) captures.push(maybeToString(result[j]));
-        var namedCaptures = result.groups;
-        if (functionalReplace) {
-          var replacerArgs = [matched].concat(captures, position, S);
-          if (namedCaptures !== undefined) replacerArgs.push(namedCaptures);
-          var replacement = String(replaceValue.apply(undefined, replacerArgs));
-        } else {
-          replacement = getSubstitution(matched, S, position, captures, namedCaptures, replaceValue);
-        }
-        if (position >= nextSourcePosition) {
-          accumulatedResult += S.slice(nextSourcePosition, position) + replacement;
-          nextSourcePosition = position + matched.length;
-        }
-      }
-      return accumulatedResult + S.slice(nextSourcePosition);
-    }
-  ];
-
-    // https://tc39.github.io/ecma262/#sec-getsubstitution
-  function getSubstitution(matched, str, position, captures, namedCaptures, replacement) {
-    var tailPos = position + matched.length;
-    var m = captures.length;
-    var symbols = SUBSTITUTION_SYMBOLS_NO_NAMED;
-    if (namedCaptures !== undefined) {
-      namedCaptures = toObject(namedCaptures);
-      symbols = SUBSTITUTION_SYMBOLS;
-    }
-    return $replace.call(replacement, symbols, function (match, ch) {
-      var capture;
-      switch (ch.charAt(0)) {
-        case '$': return '$';
-        case '&': return matched;
-        case '`': return str.slice(0, position);
-        case "'": return str.slice(tailPos);
-        case '<':
-          capture = namedCaptures[ch.slice(1, -1)];
-          break;
-        default: // \d\d?
-          var n = +ch;
-          if (n === 0) return match;
-          if (n > m) {
-            var f = floor(n / 10);
-            if (f === 0) return match;
-            if (f <= m) return captures[f - 1] === undefined ? ch.charAt(1) : captures[f - 1] + ch.charAt(1);
-            return match;
-          }
-          capture = captures[n - 1];
-      }
-      return capture === undefined ? '' : capture;
-    });
-  }
-});
-
-},{"./_advance-string-index":19,"./_an-object":20,"./_fix-re-wks":33,"./_regexp-exec-abstract":64,"./_to-integer":74,"./_to-length":76,"./_to-object":77}],88:[function(require,module,exports){
-'use strict';
-
-var anObject = require('./_an-object');
-var sameValue = require('./_same-value');
-var regExpExec = require('./_regexp-exec-abstract');
-
-// @@search logic
-require('./_fix-re-wks')('search', 1, function (defined, SEARCH, $search, maybeCallNative) {
-  return [
-    // `String.prototype.search` method
-    // https://tc39.github.io/ecma262/#sec-string.prototype.search
-    function search(regexp) {
-      var O = defined(this);
-      var fn = regexp == undefined ? undefined : regexp[SEARCH];
-      return fn !== undefined ? fn.call(regexp, O) : new RegExp(regexp)[SEARCH](String(O));
-    },
-    // `RegExp.prototype[@@search]` method
-    // https://tc39.github.io/ecma262/#sec-regexp.prototype-@@search
-    function (regexp) {
-      var res = maybeCallNative($search, regexp, this);
-      if (res.done) return res.value;
-      var rx = anObject(regexp);
-      var S = String(this);
-      var previousLastIndex = rx.lastIndex;
-      if (!sameValue(previousLastIndex, 0)) rx.lastIndex = 0;
-      var result = regExpExec(rx, S);
-      if (!sameValue(rx.lastIndex, previousLastIndex)) rx.lastIndex = previousLastIndex;
-      return result === null ? -1 : result.index;
-    }
-  ];
-});
-
-},{"./_an-object":20,"./_fix-re-wks":33,"./_regexp-exec-abstract":64,"./_same-value":66}],89:[function(require,module,exports){
-'use strict';
-
-var isRegExp = require('./_is-regexp');
-var anObject = require('./_an-object');
-var speciesConstructor = require('./_species-constructor');
-var advanceStringIndex = require('./_advance-string-index');
-var toLength = require('./_to-length');
-var callRegExpExec = require('./_regexp-exec-abstract');
-var regexpExec = require('./_regexp-exec');
-var fails = require('./_fails');
-var $min = Math.min;
-var $push = [].push;
-var $SPLIT = 'split';
-var LENGTH = 'length';
-var LAST_INDEX = 'lastIndex';
-var MAX_UINT32 = 0xffffffff;
-
-// babel-minify transpiles RegExp('x', 'y') -> /x/y and it causes SyntaxError
-var SUPPORTS_Y = !fails(function () { RegExp(MAX_UINT32, 'y'); });
-
-// @@split logic
-require('./_fix-re-wks')('split', 2, function (defined, SPLIT, $split, maybeCallNative) {
-  var internalSplit;
-  if (
-    'abbc'[$SPLIT](/(b)*/)[1] == 'c' ||
-    'test'[$SPLIT](/(?:)/, -1)[LENGTH] != 4 ||
-    'ab'[$SPLIT](/(?:ab)*/)[LENGTH] != 2 ||
-    '.'[$SPLIT](/(.?)(.?)/)[LENGTH] != 4 ||
-    '.'[$SPLIT](/()()/)[LENGTH] > 1 ||
-    ''[$SPLIT](/.?/)[LENGTH]
-  ) {
-    // based on es5-shim implementation, need to rework it
-    internalSplit = function (separator, limit) {
-      var string = String(this);
-      if (separator === undefined && limit === 0) return [];
-      // If `separator` is not a regex, use native split
-      if (!isRegExp(separator)) return $split.call(string, separator, limit);
-      var output = [];
-      var flags = (separator.ignoreCase ? 'i' : '') +
-                  (separator.multiline ? 'm' : '') +
-                  (separator.unicode ? 'u' : '') +
-                  (separator.sticky ? 'y' : '');
-      var lastLastIndex = 0;
-      var splitLimit = limit === undefined ? MAX_UINT32 : limit >>> 0;
-      // Make `global` and avoid `lastIndex` issues by working with a copy
-      var separatorCopy = new RegExp(separator.source, flags + 'g');
-      var match, lastIndex, lastLength;
-      while (match = regexpExec.call(separatorCopy, string)) {
-        lastIndex = separatorCopy[LAST_INDEX];
-        if (lastIndex > lastLastIndex) {
-          output.push(string.slice(lastLastIndex, match.index));
-          if (match[LENGTH] > 1 && match.index < string[LENGTH]) $push.apply(output, match.slice(1));
-          lastLength = match[0][LENGTH];
-          lastLastIndex = lastIndex;
-          if (output[LENGTH] >= splitLimit) break;
-        }
-        if (separatorCopy[LAST_INDEX] === match.index) separatorCopy[LAST_INDEX]++; // Avoid an infinite loop
-      }
-      if (lastLastIndex === string[LENGTH]) {
-        if (lastLength || !separatorCopy.test('')) output.push('');
-      } else output.push(string.slice(lastLastIndex));
-      return output[LENGTH] > splitLimit ? output.slice(0, splitLimit) : output;
-    };
-  // Chakra, V8
-  } else if ('0'[$SPLIT](undefined, 0)[LENGTH]) {
-    internalSplit = function (separator, limit) {
-      return separator === undefined && limit === 0 ? [] : $split.call(this, separator, limit);
-    };
-  } else {
-    internalSplit = $split;
-  }
-
-  return [
-    // `String.prototype.split` method
-    // https://tc39.github.io/ecma262/#sec-string.prototype.split
-    function split(separator, limit) {
-      var O = defined(this);
-      var splitter = separator == undefined ? undefined : separator[SPLIT];
-      return splitter !== undefined
-        ? splitter.call(separator, O, limit)
-        : internalSplit.call(String(O), separator, limit);
-    },
-    // `RegExp.prototype[@@split]` method
-    // https://tc39.github.io/ecma262/#sec-regexp.prototype-@@split
-    //
-    // NOTE: This cannot be properly polyfilled in engines that don't support
-    // the 'y' flag.
-    function (regexp, limit) {
-      var res = maybeCallNative(internalSplit, regexp, this, limit, internalSplit !== $split);
-      if (res.done) return res.value;
-
-      var rx = anObject(regexp);
-      var S = String(this);
-      var C = speciesConstructor(rx, RegExp);
-
-      var unicodeMatching = rx.unicode;
-      var flags = (rx.ignoreCase ? 'i' : '') +
-                  (rx.multiline ? 'm' : '') +
-                  (rx.unicode ? 'u' : '') +
-                  (SUPPORTS_Y ? 'y' : 'g');
-
-      // ^(? + rx + ) is needed, in combination with some S slicing, to
-      // simulate the 'y' flag.
-      var splitter = new C(SUPPORTS_Y ? rx : '^(?:' + rx.source + ')', flags);
-      var lim = limit === undefined ? MAX_UINT32 : limit >>> 0;
-      if (lim === 0) return [];
-      if (S.length === 0) return callRegExpExec(splitter, S) === null ? [S] : [];
-      var p = 0;
-      var q = 0;
-      var A = [];
-      while (q < S.length) {
-        splitter.lastIndex = SUPPORTS_Y ? q : 0;
-        var z = callRegExpExec(splitter, SUPPORTS_Y ? S : S.slice(q));
-        var e;
-        if (
-          z === null ||
-          (e = $min(toLength(splitter.lastIndex + (SUPPORTS_Y ? 0 : q)), S.length)) === p
-        ) {
-          q = advanceStringIndex(S, q, unicodeMatching);
-        } else {
-          A.push(S.slice(p, q));
-          if (A.length === lim) return A;
-          for (var i = 1; i <= z.length - 1; i++) {
-            A.push(z[i]);
-            if (A.length === lim) return A;
-          }
-          q = p = e;
-        }
-      }
-      A.push(S.slice(p));
-      return A;
-    }
-  ];
-});
-
-},{"./_advance-string-index":19,"./_an-object":20,"./_fails":32,"./_fix-re-wks":33,"./_is-regexp":44,"./_regexp-exec":65,"./_regexp-exec-abstract":64,"./_species-constructor":70,"./_to-length":76}],90:[function(require,module,exports){
-'use strict';
-// ECMAScript 6 symbols shim
-var global = require('./_global');
-var has = require('./_has');
-var DESCRIPTORS = require('./_descriptors');
-var $export = require('./_export');
-var redefine = require('./_redefine');
-var META = require('./_meta').KEY;
-var $fails = require('./_fails');
-var shared = require('./_shared');
-var setToStringTag = require('./_set-to-string-tag');
-var uid = require('./_uid');
-var wks = require('./_wks');
-var wksExt = require('./_wks-ext');
-var wksDefine = require('./_wks-define');
-var enumKeys = require('./_enum-keys');
-var isArray = require('./_is-array');
-var anObject = require('./_an-object');
-var isObject = require('./_is-object');
-var toIObject = require('./_to-iobject');
-var toPrimitive = require('./_to-primitive');
-var createDesc = require('./_property-desc');
-var _create = require('./_object-create');
-var gOPNExt = require('./_object-gopn-ext');
-var $GOPD = require('./_object-gopd');
-var $DP = require('./_object-dp');
-var $keys = require('./_object-keys');
-var gOPD = $GOPD.f;
-var dP = $DP.f;
-var gOPN = gOPNExt.f;
-var $Symbol = global.Symbol;
-var $JSON = global.JSON;
-var _stringify = $JSON && $JSON.stringify;
-var PROTOTYPE = 'prototype';
-var HIDDEN = wks('_hidden');
-var TO_PRIMITIVE = wks('toPrimitive');
-var isEnum = {}.propertyIsEnumerable;
-var SymbolRegistry = shared('symbol-registry');
-var AllSymbols = shared('symbols');
-var OPSymbols = shared('op-symbols');
-var ObjectProto = Object[PROTOTYPE];
-var USE_NATIVE = typeof $Symbol == 'function';
-var QObject = global.QObject;
-// Don't use setters in Qt Script, https://github.com/zloirock/core-js/issues/173
-var setter = !QObject || !QObject[PROTOTYPE] || !QObject[PROTOTYPE].findChild;
-
-// fallback for old Android, https://code.google.com/p/v8/issues/detail?id=687
-var setSymbolDesc = DESCRIPTORS && $fails(function () {
-  return _create(dP({}, 'a', {
-    get: function () { return dP(this, 'a', { value: 7 }).a; }
-  })).a != 7;
-}) ? function (it, key, D) {
-  var protoDesc = gOPD(ObjectProto, key);
-  if (protoDesc) delete ObjectProto[key];
-  dP(it, key, D);
-  if (protoDesc && it !== ObjectProto) dP(ObjectProto, key, protoDesc);
-} : dP;
-
-var wrap = function (tag) {
-  var sym = AllSymbols[tag] = _create($Symbol[PROTOTYPE]);
-  sym._k = tag;
-  return sym;
-};
-
-var isSymbol = USE_NATIVE && typeof $Symbol.iterator == 'symbol' ? function (it) {
-  return typeof it == 'symbol';
-} : function (it) {
-  return it instanceof $Symbol;
-};
-
-var $defineProperty = function defineProperty(it, key, D) {
-  if (it === ObjectProto) $defineProperty(OPSymbols, key, D);
-  anObject(it);
-  key = toPrimitive(key, true);
-  anObject(D);
-  if (has(AllSymbols, key)) {
-    if (!D.enumerable) {
-      if (!has(it, HIDDEN)) dP(it, HIDDEN, createDesc(1, {}));
-      it[HIDDEN][key] = true;
-    } else {
-      if (has(it, HIDDEN) && it[HIDDEN][key]) it[HIDDEN][key] = false;
-      D = _create(D, { enumerable: createDesc(0, false) });
-    } return setSymbolDesc(it, key, D);
-  } return dP(it, key, D);
-};
-var $defineProperties = function defineProperties(it, P) {
-  anObject(it);
-  var keys = enumKeys(P = toIObject(P));
-  var i = 0;
-  var l = keys.length;
-  var key;
-  while (l > i) $defineProperty(it, key = keys[i++], P[key]);
-  return it;
-};
-var $create = function create(it, P) {
-  return P === undefined ? _create(it) : $defineProperties(_create(it), P);
-};
-var $propertyIsEnumerable = function propertyIsEnumerable(key) {
-  var E = isEnum.call(this, key = toPrimitive(key, true));
-  if (this === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key)) return false;
-  return E || !has(this, key) || !has(AllSymbols, key) || has(this, HIDDEN) && this[HIDDEN][key] ? E : true;
-};
-var $getOwnPropertyDescriptor = function getOwnPropertyDescriptor(it, key) {
-  it = toIObject(it);
-  key = toPrimitive(key, true);
-  if (it === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key)) return;
-  var D = gOPD(it, key);
-  if (D && has(AllSymbols, key) && !(has(it, HIDDEN) && it[HIDDEN][key])) D.enumerable = true;
-  return D;
-};
-var $getOwnPropertyNames = function getOwnPropertyNames(it) {
-  var names = gOPN(toIObject(it));
-  var result = [];
-  var i = 0;
-  var key;
-  while (names.length > i) {
-    if (!has(AllSymbols, key = names[i++]) && key != HIDDEN && key != META) result.push(key);
-  } return result;
-};
-var $getOwnPropertySymbols = function getOwnPropertySymbols(it) {
-  var IS_OP = it === ObjectProto;
-  var names = gOPN(IS_OP ? OPSymbols : toIObject(it));
-  var result = [];
-  var i = 0;
-  var key;
-  while (names.length > i) {
-    if (has(AllSymbols, key = names[i++]) && (IS_OP ? has(ObjectProto, key) : true)) result.push(AllSymbols[key]);
-  } return result;
-};
-
-// 19.4.1.1 Symbol([description])
-if (!USE_NATIVE) {
-  $Symbol = function Symbol() {
-    if (this instanceof $Symbol) throw TypeError('Symbol is not a constructor!');
-    var tag = uid(arguments.length > 0 ? arguments[0] : undefined);
-    var $set = function (value) {
-      if (this === ObjectProto) $set.call(OPSymbols, value);
-      if (has(this, HIDDEN) && has(this[HIDDEN], tag)) this[HIDDEN][tag] = false;
-      setSymbolDesc(this, tag, createDesc(1, value));
-    };
-    if (DESCRIPTORS && setter) setSymbolDesc(ObjectProto, tag, { configurable: true, set: $set });
-    return wrap(tag);
-  };
-  redefine($Symbol[PROTOTYPE], 'toString', function toString() {
-    return this._k;
-  });
-
-  $GOPD.f = $getOwnPropertyDescriptor;
-  $DP.f = $defineProperty;
-  require('./_object-gopn').f = gOPNExt.f = $getOwnPropertyNames;
-  require('./_object-pie').f = $propertyIsEnumerable;
-  require('./_object-gops').f = $getOwnPropertySymbols;
-
-  if (DESCRIPTORS && !require('./_library')) {
-    redefine(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
-  }
-
-  wksExt.f = function (name) {
-    return wrap(wks(name));
-  };
-}
-
-$export($export.G + $export.W + $export.F * !USE_NATIVE, { Symbol: $Symbol });
-
-for (var es6Symbols = (
-  // 19.4.2.2, 19.4.2.3, 19.4.2.4, 19.4.2.6, 19.4.2.8, 19.4.2.9, 19.4.2.10, 19.4.2.11, 19.4.2.12, 19.4.2.13, 19.4.2.14
-  'hasInstance,isConcatSpreadable,iterator,match,replace,search,species,split,toPrimitive,toStringTag,unscopables'
-).split(','), j = 0; es6Symbols.length > j;)wks(es6Symbols[j++]);
-
-for (var wellKnownSymbols = $keys(wks.store), k = 0; wellKnownSymbols.length > k;) wksDefine(wellKnownSymbols[k++]);
-
-$export($export.S + $export.F * !USE_NATIVE, 'Symbol', {
-  // 19.4.2.1 Symbol.for(key)
-  'for': function (key) {
-    return has(SymbolRegistry, key += '')
-      ? SymbolRegistry[key]
-      : SymbolRegistry[key] = $Symbol(key);
-  },
-  // 19.4.2.5 Symbol.keyFor(sym)
-  keyFor: function keyFor(sym) {
-    if (!isSymbol(sym)) throw TypeError(sym + ' is not a symbol!');
-    for (var key in SymbolRegistry) if (SymbolRegistry[key] === sym) return key;
-  },
-  useSetter: function () { setter = true; },
-  useSimple: function () { setter = false; }
-});
-
-$export($export.S + $export.F * !USE_NATIVE, 'Object', {
-  // 19.1.2.2 Object.create(O [, Properties])
-  create: $create,
-  // 19.1.2.4 Object.defineProperty(O, P, Attributes)
-  defineProperty: $defineProperty,
-  // 19.1.2.3 Object.defineProperties(O, Properties)
-  defineProperties: $defineProperties,
-  // 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
-  getOwnPropertyDescriptor: $getOwnPropertyDescriptor,
-  // 19.1.2.7 Object.getOwnPropertyNames(O)
-  getOwnPropertyNames: $getOwnPropertyNames,
-  // 19.1.2.8 Object.getOwnPropertySymbols(O)
-  getOwnPropertySymbols: $getOwnPropertySymbols
-});
-
-// 24.3.2 JSON.stringify(value [, replacer [, space]])
-$JSON && $export($export.S + $export.F * (!USE_NATIVE || $fails(function () {
-  var S = $Symbol();
-  // MS Edge converts symbol values to JSON as {}
-  // WebKit converts symbol values to JSON as null
-  // V8 throws on boxed symbols
-  return _stringify([S]) != '[null]' || _stringify({ a: S }) != '{}' || _stringify(Object(S)) != '{}';
-})), 'JSON', {
-  stringify: function stringify(it) {
-    var args = [it];
-    var i = 1;
-    var replacer, $replacer;
-    while (arguments.length > i) args.push(arguments[i++]);
-    $replacer = replacer = args[1];
-    if (!isObject(replacer) && it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
-    if (!isArray(replacer)) replacer = function (key, value) {
-      if (typeof $replacer == 'function') value = $replacer.call(this, key, value);
-      if (!isSymbol(value)) return value;
-    };
-    args[1] = replacer;
-    return _stringify.apply($JSON, args);
-  }
-});
-
-// 19.4.3.4 Symbol.prototype[@@toPrimitive](hint)
-$Symbol[PROTOTYPE][TO_PRIMITIVE] || require('./_hide')($Symbol[PROTOTYPE], TO_PRIMITIVE, $Symbol[PROTOTYPE].valueOf);
-// 19.4.3.5 Symbol.prototype[@@toStringTag]
-setToStringTag($Symbol, 'Symbol');
-// 20.2.1.9 Math[@@toStringTag]
-setToStringTag(Math, 'Math', true);
-// 24.3.3 JSON[@@toStringTag]
-setToStringTag(global.JSON, 'JSON', true);
-
-},{"./_an-object":20,"./_descriptors":27,"./_enum-keys":30,"./_export":31,"./_fails":32,"./_global":36,"./_has":37,"./_hide":38,"./_is-array":42,"./_is-object":43,"./_library":49,"./_meta":50,"./_object-create":51,"./_object-dp":52,"./_object-gopd":54,"./_object-gopn":56,"./_object-gopn-ext":55,"./_object-gops":57,"./_object-keys":60,"./_object-pie":61,"./_property-desc":62,"./_redefine":63,"./_set-to-string-tag":67,"./_shared":69,"./_to-iobject":75,"./_to-primitive":78,"./_uid":79,"./_wks":82,"./_wks-define":80,"./_wks-ext":81}],91:[function(require,module,exports){
-require('./_wks-define')('asyncIterator');
-
-},{"./_wks-define":80}],92:[function(require,module,exports){
-var $iterators = require('./es6.array.iterator');
-var getKeys = require('./_object-keys');
-var redefine = require('./_redefine');
-var global = require('./_global');
-var hide = require('./_hide');
-var Iterators = require('./_iterators');
-var wks = require('./_wks');
-var ITERATOR = wks('iterator');
-var TO_STRING_TAG = wks('toStringTag');
-var ArrayValues = Iterators.Array;
-
-var DOMIterables = {
-  CSSRuleList: true, // TODO: Not spec compliant, should be false.
-  CSSStyleDeclaration: false,
-  CSSValueList: false,
-  ClientRectList: false,
-  DOMRectList: false,
-  DOMStringList: false,
-  DOMTokenList: true,
-  DataTransferItemList: false,
-  FileList: false,
-  HTMLAllCollection: false,
-  HTMLCollection: false,
-  HTMLFormElement: false,
-  HTMLSelectElement: false,
-  MediaList: true, // TODO: Not spec compliant, should be false.
-  MimeTypeArray: false,
-  NamedNodeMap: false,
-  NodeList: true,
-  PaintRequestList: false,
-  Plugin: false,
-  PluginArray: false,
-  SVGLengthList: false,
-  SVGNumberList: false,
-  SVGPathSegList: false,
-  SVGPointList: false,
-  SVGStringList: false,
-  SVGTransformList: false,
-  SourceBufferList: false,
-  StyleSheetList: true, // TODO: Not spec compliant, should be false.
-  TextTrackCueList: false,
-  TextTrackList: false,
-  TouchList: false
-};
-
-for (var collections = getKeys(DOMIterables), i = 0; i < collections.length; i++) {
-  var NAME = collections[i];
-  var explicit = DOMIterables[NAME];
-  var Collection = global[NAME];
-  var proto = Collection && Collection.prototype;
-  var key;
-  if (proto) {
-    if (!proto[ITERATOR]) hide(proto, ITERATOR, ArrayValues);
-    if (!proto[TO_STRING_TAG]) hide(proto, TO_STRING_TAG, NAME);
-    Iterators[NAME] = ArrayValues;
-    if (explicit) for (key in $iterators) if (!proto[key]) redefine(proto, key, $iterators[key], true);
-  }
-}
-
-},{"./_global":36,"./_hide":38,"./_iterators":48,"./_object-keys":60,"./_redefine":63,"./_wks":82,"./es6.array.iterator":83}],93:[function(require,module,exports){
 // https://d3js.org/d3-array/ v1.2.4 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -7295,7 +5623,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],94:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 // https://d3js.org/d3-axis/ v1.0.12 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -7490,7 +5818,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],95:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 // https://d3js.org/d3-brush/ v1.0.6 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-dispatch'), require('d3-drag'), require('d3-interpolate'), require('d3-transition')) :
@@ -8059,7 +6387,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dispatch":100,"d3-drag":101,"d3-interpolate":109,"d3-selection":116,"d3-transition":121}],96:[function(require,module,exports){
+},{"d3-dispatch":24,"d3-drag":25,"d3-interpolate":33,"d3-selection":40,"d3-transition":45}],20:[function(require,module,exports){
 // https://d3js.org/d3-chord/ v1.0.6 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-path')) :
@@ -8291,7 +6619,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":93,"d3-path":110}],97:[function(require,module,exports){
+},{"d3-array":17,"d3-path":34}],21:[function(require,module,exports){
 // https://d3js.org/d3-collection/ v1.0.7 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -8510,7 +6838,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],98:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 // https://d3js.org/d3-color/ v1.2.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -9061,7 +7389,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],99:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 // https://d3js.org/d3-contour/ v1.3.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array')) :
@@ -9494,7 +7822,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":93}],100:[function(require,module,exports){
+},{"d3-array":17}],24:[function(require,module,exports){
 // https://d3js.org/d3-dispatch/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -9591,7 +7919,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],101:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 // https://d3js.org/d3-drag/ v1.2.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-dispatch')) :
@@ -9827,7 +8155,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dispatch":100,"d3-selection":116}],102:[function(require,module,exports){
+},{"d3-dispatch":24,"d3-selection":40}],26:[function(require,module,exports){
 // https://d3js.org/d3-dsv/ v1.1.1 Copyright 2019 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -10046,7 +8374,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],103:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 // https://d3js.org/d3-ease/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -10307,7 +8635,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],104:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 // https://d3js.org/d3-fetch/ v1.1.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-dsv')) :
@@ -10411,7 +8739,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dsv":102}],105:[function(require,module,exports){
+},{"d3-dsv":26}],29:[function(require,module,exports){
 // https://d3js.org/d3-force/ v1.2.0 Copyright 2019 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-quadtree'), require('d3-collection'), require('d3-dispatch'), require('d3-timer')) :
@@ -11081,7 +9409,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-collection":97,"d3-dispatch":100,"d3-quadtree":112,"d3-timer":120}],106:[function(require,module,exports){
+},{"d3-collection":21,"d3-dispatch":24,"d3-quadtree":36,"d3-timer":44}],30:[function(require,module,exports){
 // https://d3js.org/d3-format/ v1.3.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -11403,7 +9731,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],107:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 // https://d3js.org/d3-geo/ v1.11.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array')) :
@@ -14508,7 +12836,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":93}],108:[function(require,module,exports){
+},{"d3-array":17}],32:[function(require,module,exports){
 // https://d3js.org/d3-hierarchy/ v1.1.8 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -15800,7 +14128,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],109:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 // https://d3js.org/d3-interpolate/ v1.3.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-color')) :
@@ -16374,7 +14702,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":98}],110:[function(require,module,exports){
+},{"d3-color":22}],34:[function(require,module,exports){
 // https://d3js.org/d3-path/ v1.0.7 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -16517,7 +14845,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],111:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 // https://d3js.org/d3-polygon/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -16669,7 +14997,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],112:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 // https://d3js.org/d3-quadtree/ v1.0.6 Copyright 2019 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -17090,7 +15418,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],113:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 // https://d3js.org/d3-random/ v1.1.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -17207,7 +15535,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],114:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 // https://d3js.org/d3-scale-chromatic/ v1.3.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-interpolate'), require('d3-color')) :
@@ -17707,7 +16035,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":98,"d3-interpolate":109}],115:[function(require,module,exports){
+},{"d3-color":22,"d3-interpolate":33}],39:[function(require,module,exports){
 // https://d3js.org/d3-scale/ v2.2.2 Copyright 2019 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-collection'), require('d3-array'), require('d3-interpolate'), require('d3-format'), require('d3-time'), require('d3-time-format')) :
@@ -18874,7 +17202,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":93,"d3-collection":97,"d3-format":106,"d3-interpolate":109,"d3-time":119,"d3-time-format":118}],116:[function(require,module,exports){
+},{"d3-array":17,"d3-collection":21,"d3-format":30,"d3-interpolate":33,"d3-time":43,"d3-time-format":42}],40:[function(require,module,exports){
 // https://d3js.org/d3-selection/ v1.4.0 Copyright 2019 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -19863,7 +18191,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],117:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 // https://d3js.org/d3-shape/ v1.3.4 Copyright 2019 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-path')) :
@@ -21814,7 +20142,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-path":110}],118:[function(require,module,exports){
+},{"d3-path":34}],42:[function(require,module,exports){
 // https://d3js.org/d3-time-format/ v2.1.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-time')) :
@@ -22500,7 +20828,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-time":119}],119:[function(require,module,exports){
+},{"d3-time":43}],43:[function(require,module,exports){
 // https://d3js.org/d3-time/ v1.0.11 Copyright 2019 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -22873,7 +21201,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],120:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 // https://d3js.org/d3-timer/ v1.0.9 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -23024,7 +21352,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],121:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 // https://d3js.org/d3-transition/ v1.2.0 Copyright 2019 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-dispatch'), require('d3-timer'), require('d3-color'), require('d3-interpolate'), require('d3-selection'), require('d3-ease')) :
@@ -23880,7 +22208,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":98,"d3-dispatch":100,"d3-ease":103,"d3-interpolate":109,"d3-selection":116,"d3-timer":120}],122:[function(require,module,exports){
+},{"d3-color":22,"d3-dispatch":24,"d3-ease":27,"d3-interpolate":33,"d3-selection":40,"d3-timer":44}],46:[function(require,module,exports){
 // https://d3js.org/d3-voronoi/ v1.1.4 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -24881,7 +23209,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],123:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 // https://d3js.org/d3-zoom/ v1.7.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-dispatch'), require('d3-drag'), require('d3-interpolate'), require('d3-transition')) :
@@ -25385,7 +23713,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dispatch":100,"d3-drag":101,"d3-interpolate":109,"d3-selection":116,"d3-transition":121}],124:[function(require,module,exports){
+},{"d3-dispatch":24,"d3-drag":25,"d3-interpolate":33,"d3-selection":40,"d3-transition":45}],48:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -25458,7 +23786,7 @@ Object.keys(d3Zoom).forEach(function (key) { exports[key] = d3Zoom[key]; });
 exports.version = version;
 Object.defineProperty(exports, "event", {get: function() { return d3Selection.event; }});
 
-},{"d3-array":93,"d3-axis":94,"d3-brush":95,"d3-chord":96,"d3-collection":97,"d3-color":98,"d3-contour":99,"d3-dispatch":100,"d3-drag":101,"d3-dsv":102,"d3-ease":103,"d3-fetch":104,"d3-force":105,"d3-format":106,"d3-geo":107,"d3-hierarchy":108,"d3-interpolate":109,"d3-path":110,"d3-polygon":111,"d3-quadtree":112,"d3-random":113,"d3-scale":115,"d3-scale-chromatic":114,"d3-selection":116,"d3-shape":117,"d3-time":119,"d3-time-format":118,"d3-timer":120,"d3-transition":121,"d3-voronoi":122,"d3-zoom":123}],125:[function(require,module,exports){
+},{"d3-array":17,"d3-axis":18,"d3-brush":19,"d3-chord":20,"d3-collection":21,"d3-color":22,"d3-contour":23,"d3-dispatch":24,"d3-drag":25,"d3-dsv":26,"d3-ease":27,"d3-fetch":28,"d3-force":29,"d3-format":30,"d3-geo":31,"d3-hierarchy":32,"d3-interpolate":33,"d3-path":34,"d3-polygon":35,"d3-quadtree":36,"d3-random":37,"d3-scale":39,"d3-scale-chromatic":38,"d3-selection":40,"d3-shape":41,"d3-time":43,"d3-time-format":42,"d3-timer":44,"d3-transition":45,"d3-voronoi":46,"d3-zoom":47}],49:[function(require,module,exports){
 (function (process,global){
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -26615,7 +24943,7 @@ return Promise;
 })));
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":128}],126:[function(require,module,exports){
+},{"_process":52}],50:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.3.1
  * https://jquery.com/
@@ -36981,7 +35309,7 @@ if ( !noGlobal ) {
 return jQuery;
 } );
 
-},{}],127:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 /*
 object-assign
 (c) Sindre Sorhus
@@ -37073,7 +35401,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 	return to;
 };
 
-},{}],128:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -37259,7 +35587,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],129:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 var Storage = require('./storage');
 var cookie = require('./cookie');
 
@@ -37300,7 +35628,7 @@ if (_storage_support) {
   };
 }
 
-},{"./cookie":130,"./storage":132}],130:[function(require,module,exports){
+},{"./cookie":54,"./storage":56}],54:[function(require,module,exports){
 function createCookie(name, value, days) {
   var date, expires;
 
@@ -37338,7 +35666,7 @@ module.exports = {
   read: readCookie
 };
 
-},{}],131:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 module.exports = function(obj) {
   var n = 0;
   for (var k in obj) {
@@ -37350,7 +35678,7 @@ module.exports = function(obj) {
   return n;
 };
 
-},{}],132:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 var numKeys = require('./num-keys');
 
 function Storage(obj, set, clear) {
@@ -37409,7 +35737,7 @@ proto._updateLength = function() {
 
 module.exports = Storage;
 
-},{"./num-keys":131}],133:[function(require,module,exports){
+},{"./num-keys":55}],57:[function(require,module,exports){
 function Agent() {
   this._defaults = [];
 }
@@ -37431,7 +35759,7 @@ Agent.prototype._setDefaults = function(req) {
 
 module.exports = Agent;
 
-},{}],134:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 /**
  * Root reference for iframes.
  */
@@ -38353,7 +36681,7 @@ request.put = function(url, data, fn) {
   return req;
 };
 
-},{"./agent-base":133,"./is-object":135,"./request-base":136,"./response-base":137,"component-emitter":16}],135:[function(require,module,exports){
+},{"./agent-base":57,"./is-object":59,"./request-base":60,"./response-base":61,"component-emitter":16}],59:[function(require,module,exports){
 'use strict';
 
 /**
@@ -38370,7 +36698,7 @@ function isObject(obj) {
 
 module.exports = isObject;
 
-},{}],136:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 'use strict';
 
 /**
@@ -39066,7 +37394,7 @@ RequestBase.prototype._setTimeouts = function() {
   }
 };
 
-},{"./is-object":135}],137:[function(require,module,exports){
+},{"./is-object":59}],61:[function(require,module,exports){
 'use strict';
 
 /**
@@ -39204,7 +37532,7 @@ ResponseBase.prototype._setStatusProperties = function(status){
     this.unprocessableEntity = 422 == status;
 };
 
-},{"./utils":138}],138:[function(require,module,exports){
+},{"./utils":62}],62:[function(require,module,exports){
 'use strict';
 
 /**
@@ -39277,7 +37605,7 @@ exports.cleanHeader = function(header, changesOrigin){
   return header;
 };
 
-},{}],139:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 (function (setImmediate,clearImmediate){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -39356,7 +37684,7 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   delete immediateIds[id];
 };
 }).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":128,"timers":139}],140:[function(require,module,exports){
+},{"process/browser.js":52,"timers":63}],64:[function(require,module,exports){
 (function (global){
 /*!
 * Tippy.js v3.4.1
@@ -43915,7 +42243,7 @@ return tippy;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],141:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -43930,7 +42258,7 @@ Object.keys(topojsonClient).forEach(function (key) { exports[key] = topojsonClie
 Object.keys(topojsonServer).forEach(function (key) { exports[key] = topojsonServer[key]; });
 Object.keys(topojsonSimplify).forEach(function (key) { exports[key] = topojsonSimplify[key]; });
 
-},{"topojson-client":142,"topojson-server":143,"topojson-simplify":144}],142:[function(require,module,exports){
+},{"topojson-client":66,"topojson-server":67,"topojson-simplify":68}],66:[function(require,module,exports){
 // https://github.com/topojson/topojson-client Version 3.0.0. Copyright 2017 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -44437,7 +42765,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],143:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 // https://github.com/topojson/topojson-server Version 3.0.0. Copyright 2017 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -45275,7 +43603,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],144:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 // https://github.com/topojson/topojson-simplify Version 3.0.2. Copyright 2017 Mike Bostock.
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('topojson-client')) :
@@ -45771,7 +44099,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"topojson-client":142}],145:[function(require,module,exports){
+},{"topojson-client":66}],69:[function(require,module,exports){
 (function (setImmediate){
 /*!
  * typeahead.js 0.11.1
@@ -48225,4 +46553,4 @@ Object.defineProperty(exports, '__esModule', { value: true });
     })();
 });
 }).call(this,require("timers").setImmediate)
-},{"jquery":126,"timers":139}]},{},[1]);
+},{"jquery":50,"timers":63}]},{},[1]);

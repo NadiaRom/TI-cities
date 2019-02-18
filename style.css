@@ -2,136 +2,111 @@ body {
   font-family: "Open Sans", sans-serif;
   background-color: #ffffff;
   color: #333331;
-  margin: 0;
-}
-body * {
-  box-sizing: border-box;
-  outline: none;
-}
+  margin: 0; }
+  body * {
+    box-sizing: border-box;
+    outline: none; }
 
 #cities_map {
   display: grid;
   grid-template-columns: 1.61fr 1fr;
   grid-template-rows: auto 1fr auto;
   height: 100vh;
-  margin: 0 2em 0 2em;
-}
-#cities_map header {
-  margin: 0;
-  padding: 0;
-}
-#cities_map figure#map {
-  margin: 0;
-  padding: 0;
-}
-#cities_map figure#map svg path.obl {
-  stroke: #dbdbda;
-  fill: none;
-}
-#cities_map figure#map svg path.country {
-  stroke: #dbdbda;
-  fill: none;
-  stroke-width: 3px;
-}
-#cities_map figure#map svg g.city {
-  font-size: 0.75em;
-}
-#cities_map figure#map svg g.city .g2018 path {
-  fill: none;
-  stroke-opacity: 0.7;
-  stroke-linecap: round;
-}
-#cities_map figure#map svg g.city text {
-  font-family: "Open Sans", sans-serif;
-  fill: #676763;
-  dominant-baseline: text-before-edge;
-  text-anchor: middle;
-  opacity: 0;
-}
-#cities_map figure#map svg g.city text.obl_center {
-  opacity: 1;
-}
-#cities_map figure#ranking {
-  grid-row: 2/4;
-  grid-column: 2/3;
-  display: grid;
-  grid-template-rows: auto 1fr;
-  grid-template-columns: 1fr;
-  padding: 0 0 0 2em;
-  margin: 0;
-}
-#cities_map figure#ranking svg g.sl_city text {
-  font-size: 0.85em;
-  font-family: "Open Sans", sans-serif;
-  fill: #333331;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.5s;
-}
-#cities_map figure#ranking svg g.sl_city circle {
-  fill-opacity: 0.2;
-  stroke-opacity: 0.75;
-  stroke-width: 0.75px;
-}
-#cities_map figure#ranking svg g.sl_city path {
-  fill: none;
-  stroke: rgba(116, 116, 111, 0.33);
-}
-#cities_map figure#ranking svg g.sl_city.visible_default text {
-  opacity: 1;
-  pointer-events: auto;
-}
-#cities_map figure#ranking svg g.sl_city.visible_default circle {
-  fill-opacity: 1;
-  stroke-width: 0.25em;
-  stroke-opacity: 1;
-}
-#cities_map figure#ranking svg path.x_axis {
-  fill: none;
-  stroke: #bfbfbf;
-  stroke-width: 0.5px;
-}
-#cities_map nav#indicators {
-  display: flex;
-  flex-wrap: wrap;
-}
-#cities_map nav#indicators button.ind {
-  border-radius: 0;
-  box-shadow: 0;
-  padding: 0.33em;
-  margin: 0.25em;
-  border: 1px solid #89deff;
-  background-color: #f2f2f2;
-  font-size: 0.75em;
-  letter-spacing: 0.075em;
-  text-transform: uppercase;
-  transition: all 0.5s;
-}
-#cities_map nav#indicators button.ind.active {
-  background-color: #00adef;
-  color: #f2f2f2;
-  font-weight: 600;
-}
+  margin: 0 2em 0 2em; }
+  #cities_map header {
+    margin: 0;
+    padding: 0; }
+  #cities_map figure#map {
+    margin: 0;
+    padding: 0; }
+    #cities_map figure#map svg path.obl {
+      stroke: #dbdbda;
+      fill: none; }
+    #cities_map figure#map svg path.country {
+      stroke: #dbdbda;
+      fill: none;
+      stroke-width: 3px; }
+    #cities_map figure#map svg g.city {
+      font-size: 0.75em; }
+      #cities_map figure#map svg g.city .g2018 path {
+        fill: none;
+        stroke-opacity: 0.7;
+        stroke-linecap: round; }
+      #cities_map figure#map svg g.city text {
+        font-family: "Open Sans", sans-serif;
+        fill: #676763;
+        dominant-baseline: text-before-edge;
+        text-anchor: middle;
+        opacity: 0; }
+        #cities_map figure#map svg g.city text.obl_center {
+          opacity: 1; }
+  #cities_map figure#ranking {
+    grid-row: 2 / 4;
+    grid-column: 2 / 3;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-template-columns: 1fr;
+    padding: 0 0 0 2em;
+    margin: 0; }
+    #cities_map figure#ranking svg g.sl_city text {
+      font-size: 0.75em;
+      font-family: "Open Sans", sans-serif;
+      fill: #333331;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s; }
+    #cities_map figure#ranking svg g.sl_city circle {
+      fill-opacity: 0.2;
+      stroke-opacity: 0.75;
+      stroke-width: 0.75px; }
+    #cities_map figure#ranking svg g.sl_city path {
+      fill: none;
+      stroke: rgba(179, 179, 176, 0.5); }
+    #cities_map figure#ranking svg g.sl_city.visible_default text {
+      opacity: 1;
+      pointer-events: auto; }
+    #cities_map figure#ranking svg g.sl_city.visible_default circle {
+      fill-opacity: 1;
+      stroke-width: 0.25em;
+      stroke-opacity: 1; }
+    #cities_map figure#ranking svg path.x_axis {
+      fill: none;
+      stroke: #bfbfbf;
+      stroke-width: 0.5px; }
+  #cities_map nav#indicators {
+    display: flex;
+    flex-wrap: wrap; }
+    #cities_map nav#indicators button.ind {
+      border-radius: 0;
+      box-shadow: 0;
+      padding: 0.33em;
+      margin: 0.25em;
+      border: 1px solid #89deff;
+      background-color: #f2f2f2;
+      font-size: 0.75em;
+      letter-spacing: 0.075em;
+      text-transform: uppercase;
+      transition: all 0.5s; }
+      #cities_map nav#indicators button.ind.active {
+        background-color: #00adef;
+        color: #f2f2f2;
+        font-weight: 600; }
 
 #search_city_cont {
-  margin: auto auto auto 2em;
-}
+  margin: auto auto auto 2em; }
 
 #search_city input {
   box-shadow: none;
   border: none;
   border-bottom: 1px solid #00adef;
   line-height: 1.5;
-  font-size: 1em;
-}
+  font-size: 1em; }
 #search_city .tt-menu {
   background-color: #ffffff;
   box-shadow: 0 0.25em 0.5em 0 #ededed;
-  padding: 0 0.5em 0.5em 0.5em;
-}
+  padding: 0 0.5em 0.5em 0.5em; }
 #search_city .tt-suggestion {
   font-size: 0.85em;
-  line-height: 1.5;
-}
+  line-height: 1.5; }
 
-/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInN0eWxlLnNjc3MiLCJzdHlsZS5jc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBS0E7RUFDRSxvQ0FOUTtFQU9SLHlCQUxNO0VBTU4sY0FQUTtFQVFSLFNBQUE7QUNKRjtBRE1FO0VBQ0Usc0JBQUE7RUFDQSxhQUFBO0FDSko7O0FEUUE7RUFDRSxhQUFBO0VBQ0EsaUNBQUE7RUFDQSxpQ0FBQTtFQUNBLGFBQUE7RUFDQSxtQkFBQTtBQ0xGO0FET0U7RUFDRSxTQUFBO0VBQ0EsVUFBQTtBQ0xKO0FEUUU7RUFDRSxTQUFBO0VBQ0EsVUFBQTtBQ05KO0FEVU07RUFDRSxlQUFBO0VBQ0EsVUFBQTtBQ1JSO0FEV007RUFDRSxlQUFBO0VBQ0EsVUFBQTtFQUNBLGlCQUFBO0FDVFI7QURZTTtFQUNFLGlCQUFBO0FDVlI7QURZUTtFQUNFLFVBQUE7RUFDQSxtQkFBQTtFQUNBLHFCQUFBO0FDVlY7QURhUTtFQUNFLG9DQXhEQTtFQXlEQSxhQUFBO0VBQ0EsbUNBQUE7RUFDQSxtQkFBQTtFQUNBLFVBQUE7QUNYVjtBRGFVO0VBQ0UsVUFBQTtBQ1haO0FEa0JFO0VBQ0UsYUFBQTtFQUNBLGdCQUFBO0VBQ0EsYUFBQTtFQUNBLDRCQUFBO0VBQ0EsMEJBQUE7RUFDQSxrQkFBQTtFQUNBLFNBQUE7QUNoQko7QURxQlE7RUFDRSxpQkFBQTtFQUNBLG9DQXBGQTtFQXFGQSxhQXBGQTtFQXFGQSxVQUFBO0VBQ0Esb0JBQUE7RUFDQSx3QkFBQTtBQ25CVjtBRHNCUTtFQUNFLGlCQUFBO0VBQ0Esb0JBQUE7RUFDQSxvQkFBQTtBQ3BCVjtBRHdCUTtFQUNFLFVBQUE7RUFDQSxpQ0FBQTtBQ3RCVjtBRDBCVTtFQUNFLFVBQUE7RUFDQSxvQkFBQTtBQ3hCWjtBRDJCVTtFQUNFLGVBQUE7RUFDQSxvQkFBQTtFQUNBLGlCQUFBO0FDekJaO0FEOEJNO0VBQ0UsVUFBQTtFQUNBLGVBQUE7RUFDQSxtQkFBQTtBQzVCUjtBRGlDRTtFQUNFLGFBQUE7RUFDQSxlQUFBO0FDL0JKO0FEaUNJO0VBQ0UsZ0JBQUE7RUFDQSxhQUFBO0VBQ0EsZUFBQTtFQUNBLGNBQUE7RUFDQSx5QkFBQTtFQUNBLHlCQUFBO0VBQ0EsaUJBQUE7RUFDQSx1QkFBQTtFQUNBLHlCQUFBO0VBQ0Esb0JBQUE7QUMvQk47QURpQ007RUFDRSx5QkEzSUQ7RUE0SUMsY0FBQTtFQUNBLGdCQUFBO0FDL0JSOztBRHFDQTtFQUNFLDBCQUFBO0FDbENGOztBRHVDRTtFQUNFLGdCQUFBO0VBQ0EsWUFBQTtFQUNBLGdDQUFBO0VBQ0EsZ0JBQUE7RUFDQSxjQUFBO0FDcENKO0FEdUNFO0VBQ0UseUJBbktJO0VBb0tKLG9DQUFBO0VBQ0EsNEJBQUE7QUNyQ0o7QUR3Q0U7RUFDRSxpQkFBQTtFQUNBLGdCQUFBO0FDdENKIiwiZmlsZSI6InN0eWxlLmNzcyJ9 */
+/*# sourceMappingURL=style.css.map */

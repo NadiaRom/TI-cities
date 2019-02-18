@@ -322,13 +322,11 @@ Promise.all([
                 dy = y1 - y0,
                 diag = Math.sqrt(dx**2 + dy**2);
             return `M${x0} ${y0}
-                    q${dx*0.5} ${dy*0.5} ${dx} ${dy}
+                    q${dx*0.3} ${dy*0.2} ${dx*0.5} ${dy*0.5}
+                    q${dx*0.2} ${dy*0.3} ${dx*0.5} ${dy*0.5}
                     `
         });
-
-
-
-
+    
 
     // search cities --------------------------------------------------------------------------------------------------
     const bhCities = new Bloodhound({
