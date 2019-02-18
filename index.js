@@ -157,6 +157,17 @@ Promise.all([
         .key(d => d.city)
         .key(d => d.year)
         .entries(data);
+        // .map(function (dat) {
+        //     return dat.values.map(function (d) {
+        //         d.values = d.values.reduce(function (res, a) {
+        //             res[a.indicator] = a.value;
+        //             return res;
+        //         }, {});
+        //         return d;
+        //     });
+        // });
+
+    const currentInd = 'Загальний бал';
     
     const cityGs = map.selectAll('g.city')
         .data(nested)
@@ -235,14 +246,89 @@ Promise.all([
     
     map.call(zoom);
 
-    const slopeW = $('figure#ranking div.chart_cont').width(),
-        slopeH = $('figure#ranking div.chart_cont').height();
 
     // draw slopes ----------------------------------------------------------------------------------------------------
+    const defaultVisibleSlope = [
+       'Дрогобич', 'Маріуполь', 'Вінниця', 'Київ', 'Львів', 'Одеса', 'Харків',
+    ];
+
+    const slopeW = $('figure#ranking div.chart_cont').width(),
+        slopeH = $('figure#ranking div.chart_cont').height(),
+        slopeM = {
+            top: fontSize*2,
+            right:fontSize*0.5,
+            bottom: fontSize,
+            left: fontSize*0.5,
+        };
 
     const slopes = d3.select('figure#ranking svg')
         .attr('width', slopeW)
         .attr('height', slopeH);
+
+    const scaleValue = d3.scaleLinear()
+        .domain([0, 100])
+        .range([slopeH - slopeM.bottom, slopeM.top]);
+
+    const slopeYearLines = slopes.selectAll('path.x_axis')
+        .data(['2017', '2018'])
+        .enter()
+        .append('path')
+        .classed('x_axis', true);
+
+    const getCurrentIndValue = v => v.filter(d => d.indicator === currentInd)[0].value;
+
+    const slopeCityG = slopes.selectAll('g.sl_city')
+        .data(nested)
+        .enter()
+        .append('g')
+        .classed('sl_city', true)
+        .classed('visible_default', d => defaultVisibleSlope.indexOf(d.key) >= 0);
+
+    const slopeCityLabs = slopeCityG
+        .append('text')
+        .datum(d => d.values[1].values)
+        .text(d => d[0].city)
+        .attr('y', d => scaleValue(getCurrentIndValue(d) / indMax[currentInd] * 100));
+
+    const slopeMaxX = slopeW - d3.max(slopeCityLabs.nodes(), e => e.getComputedTextLength()) - slopeM.right;
+    const slopeR = fontSize * 0.25;
+    slopeCityLabs.attr('x', slopeMaxX);
+
+    const scaleYear = d3.scalePoint()
+        .domain(['2017', '2018'])
+        .range([slopeM.left, slopeMaxX - fontSize*0.33]);
+
+
+    slopeYearLines.attr('d', d => `M${scaleYear(d)} ${scaleValue.range()[0]} V${scaleValue.range()[1]}`);
+
+    const slopeCircles = slopeCityG.selectAll('circle')
+        .data(d => d.values)
+        .enter()
+        .append('circle')
+        .attr('cx', d => scaleYear(d.key))
+        .attr('cy', d => scaleValue(getCurrentIndValue(d.values) / indMax[currentInd] * 100))
+        .attr('r', slopeR)
+        .style('fill', function () {
+            return rankCols[getRank(scaleValue.invert(+this.getAttribute('cy')))];
+        })
+        .style('stroke', function () { return this.style.fill});
+
+    const slopePath = slopeCityG.append('path')
+        .attr('d', function () {
+            const circles = [...this.parentNode.querySelectorAll('circle')];
+            const bboxes = circles.map(e => e.getBBox());
+            const [[x0, y0], [x1, y1]] = bboxes.map(b => [b.x + slopeR, b.y + slopeR]);
+            const dx = x1 - x0,
+                dy = y1 - y0,
+                diag = Math.sqrt(dx**2 + dy**2);
+            return `M${x0} ${y0}
+                    q${dx*0.5} ${dy*0.5} ${dx} ${dy}
+                    `
+        });
+
+
+
+
 
     // search cities --------------------------------------------------------------------------------------------------
     const bhCities = new Bloodhound({
@@ -251,23 +337,8 @@ Promise.all([
         datumTokenizer: Bloodhound.tokenizers.whitespace,
     });
     bhCities.initialize().then(function () {
-
-        // const searchBH = function (q, cb) {
-        //     const matches = bhCities.search(q, function (d) {
-        //         debugger;
-        //     });
-        // };
-        // bhCities.search(
-        //     'd',
-        //     function(d) {
-        //         console.log(d);
-        //     },
-        //     function(d) {
-        //         console.log(d);
-        //     }
-        // );
-
-                $('#search_city .typeahead').typeahead({
+        $('#search_city .typeahead').typeahead(
+            {
                 hint: true,
                 highlight: true,
                 minLength: 1,
@@ -277,12 +348,5 @@ Promise.all([
                 source: bhCities,
             });
     });
-
-    // var states = new Bloodhound({
-    //     datumTokenizer: Bloodhound.tokenizers.whitespace,
-    //     queryTokenizer: Bloodhound.tokenizers.whitespace,
-    //     // `states` is an array of state names defined in "The Basics"
-    //     local: states
-    // })
     
 });

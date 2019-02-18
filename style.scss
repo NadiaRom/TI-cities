@@ -17,13 +17,12 @@ body {
 
 #cities_map {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1.61fr 1fr;
   grid-template-rows: auto 1fr auto;
   height: 100vh;
   margin: 0 2em 0 2em;
 
   header {
-    grid-column: 1 / -1;
     margin: 0;
     padding: 0;
   }
@@ -70,9 +69,58 @@ body {
   }
 
   figure#ranking {
+    grid-row: 2 / 4;
+    grid-column: 2 / 3;
     display: grid;
-    grid-template-rows: auto auto 1fr;
+    grid-template-rows: auto 1fr;
     grid-template-columns: 1fr;
+    padding: 0 0 0 2em;
+    margin: 0;
+
+    svg {
+      g.sl_city {
+
+        text {
+          font-size: 0.85em;
+          font-family: $fontfam;
+          fill: $fontcol;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.5s;
+        }
+
+        circle {
+          fill-opacity: 0.2;
+          stroke-opacity: 0.75;
+          stroke-width: 0.75px;
+          //mix-blend-mode: multiply;
+        }
+
+        path {
+          fill: none;
+          stroke: rgba(lighten($fontcol, 25%), 0.33);
+        }
+
+        &.visible_default {
+          text {
+            opacity: 1;
+            pointer-events: auto;
+          }
+
+          circle {
+            fill-opacity: 1;
+            stroke-width: 0.25em;
+            stroke-opacity: 1;
+          }
+        }
+      }
+
+      path.x_axis {
+        fill: none;
+        stroke: darken($bgcol, 25%);
+        stroke-width: 0.5px;
+      }
+    }
   }
 
   nav#indicators {
@@ -98,6 +146,10 @@ body {
       }
     }
   }
+}
+
+#search_city_cont {
+  margin: auto auto auto 2em;
 }
 
 #search_city {
